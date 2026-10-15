@@ -1,0 +1,64 @@
+/*
+ * Alder — derivative of Free-FS (https://github.com/dromara/free-fs).
+ * Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
+ */
+
+package com.xddcodec.fs.file.service;
+
+import com.xddcodec.fs.File.domain.FileShareItem;
+
+import java.util.List;
+
+/**
+ * 文件分享关联服务接口
+ *
+ * @Author: xddcode
+ * @Date: 2025/10/30 9:35
+ */
+public interface FileShareItemService {
+
+    /**
+     * 创建分享文件关联
+     *
+     * @param shareId
+     * @param fileIds
+     */
+    void saveShareItems(String shareId, List<String> fileIds);
+
+    /**
+     * 删除分享文件关联
+     *
+     * @param shareId
+     */
+    void removeByShareId(String shareId);
+
+    /**
+     * 按多个分享ID删除关联
+     */
+    void removeByShareIds(List<String> shareIds);
+
+    /**
+     * 获取分享对应的文件数量
+     *
+     * @param shareId
+     * @return
+     */
+    Long countByShareId(String shareId);
+
+    /**
+     * 获取分享对应的文件IDS
+     *
+     * @param shareId
+     * @return
+     */
+    List<String> getShareFileIds(String shareId);
+
+    /**
+     * 判断文件是否在分享中
+     *
+     * @param shareId
+     * @param fileId
+     * @return
+     */
+    boolean isFileInShare(String shareId, String fileId);
+}

@@ -1,0 +1,116 @@
+/* ============================================================
+   drag-layer.css — 三向拖拽的统一视觉
+   ------------------------------------------------------------
+   覆盖：备忘录 ⇄ 工作空间文件 ⇄ 对话（含 AI 助手）
+   只在拖拽发生时才出现，静止时零成本。
+   只动 transform / opacity，不做布局位移。
+   ============================================================ */
+
+/* ---- 落点遮罩 ---- */
+.drag-drop-hint {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--radius-lg);
+  border: 1.5px dashed color-mix(in oklab, var(--primary) 55%, transparent);
+  background: color-mix(in oklab, var(--primary) 10%, var(--glass-strong));
+  color: var(--primary);
+  font: 600 13px/1.3 var(--font-sans);
+  letter-spacing: -0.01em;
+  opacity: 0;
+  scale: 0.97;
+  transition:
+    opacity 180ms var(--ease-glide),
+    scale 260ms var(--ease-ios);
+  pointer-events: none;
+}
+
+.drag-drop-hint.is-active {
+  opacity: 1;
+  scale: 1;
+}
+
+.drag-drop-hint--full {
+  inset: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+}
+
+.drag-drop-hint--compact {
+  inset: 0;
+  justify-content: center;
+  padding: 0 10px;
+  gap: 6px;
+  border-radius: var(--radius-md);
+  border-style: solid;
+  border-width: 1px;
+  font-size: 12px;
+  background: color-mix(in oklab, var(--primary) 16%, var(--glass-strong));
+}
+
+.drag-drop-hint__ico {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 11px;
+  background: color-mix(in oklab, var(--primary) 16%, transparent);
+}
+
+.drag-drop-hint--compact .drag-drop-hint__ico {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+}
+
+.drag-drop-hint__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* ---- 拖拽源：被拖起时的「抬起 + 倾斜」 ---- */
+.drag-source-active {
+  opacity: 0.55;
+  scale: 0.97;
+  rotate: -1.2deg;
+  transition:
+    opacity 200ms var(--ease-glide),
+    scale 260ms var(--ease-ios),
+    rotate 260ms var(--ease-ios);
+}
+
+/* 源卡片：有落点正在接它时，给一圈「可放下」的提示 */
+.drag-source-dropready {
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--primary) 45%, transparent),
+    var(--shadow-lg);
+}
+
+/* ---- 全局拖拽态：光标与文本选择 ---- */
+body[data-dragging='true'],
+body[data-dragging='true'] * {
+  cursor: grabbing !important;
+}
+
+body[data-dragging='true'] {
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drag-drop-hint,
+  .drag-source-active {
+    transition-duration: 0.01ms !important;
+  }
+  .drag-source-active {
+    rotate: 0deg;
+    scale: 1;
+  }
+}

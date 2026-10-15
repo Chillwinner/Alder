@@ -1,0 +1,38 @@
+# Docker Compose 使用。镜像构建时复制为 application-docker.yml。
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/free-fs?reWriteBatchedInserts=true
+    username: alder
+    password: alder
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connectionTestQuery: SELECT 1
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password:
+      database: 0
+      timeout: 10s
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+      cache-null-values: true
+
+fs:
+  frontend:
+    domain: ${FS_FRONTEND_DOMAIN:http://localhost}
+  cors:
+    allowed-origins: ${FS_CORS_ALLOWED_ORIGINS:http://localhost,http://127.0.0.1}
+  storage:
+    local:
+      base-path: /data/uploads
+      base-url: ${FS_LOCAL_BASE_URL:http://localhost/files}
+
+turn:
+  host: ${TURN_HOST:}
+  port: ${TURN_PORT:3478}
+  auth-secret: ${TURN_AUTH_SECRET:}

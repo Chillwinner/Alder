@@ -1,0 +1,77 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+/logs/**
+
+### VS Code ###
+.vscode/
+.cursor/
+
+.flattened-pom.xml
+
+logs/
+
+.workflow/
+
+.qoder/
+
+.kiro/
+
+# 本地上传文件（目录本身保留）
+Common/src/main/java/com/xddcodec/fs/uploads/**
+!Common/src/main/java/com/xddcodec/fs/uploads/.gitkeep
+
+# ============================================================
+# 本地调试产物（不入库）
+# ============================================================
+# ⚠️ .qa-tunnel/ 里含 SSH 连接脚本，部分脚本带**明文服务器密码**。
+#    绝对不要提交，也不要从这个目录里挑文件加入版本控制。
+.qa-tunnel/
+.qa/
+.alder-shots/
+_demo/
+*.tsbuildinfo
+
+# 本机 Spring 配置（只入库 *.example.yml）
+**/src/main/resources/application.yml
+**/src/main/resources/application-*.yml
+!**/src/main/resources/application.example.yml
+!**/src/main/resources/application-*.example.yml
+
+# 笔记、样例稿不入库；README 配图保留
+问题.md
+_doc/
+!docs/readme/
+!docs/readme/**
+*.tgz
+.DS_Store
+Thumbs.db
+*.orig
+*.box

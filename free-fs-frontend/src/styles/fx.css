@@ -1,0 +1,181 @@
+/* ============================================================
+   NEBULA · 交互动效层  fx.css
+   ------------------------------------------------------------
+   · 只叠加动效：transform / translate / rotate / opacity / shadow
+   · 颜色一律走 tokens（--hud / --primary / --border / --shadow-*），
+     rgba 黑/白仅用于光效渐变；双主题（.dark）自动适配
+   · 新类名统一 fx- 前缀；与 index.css 并列加载（由 fx-layer.ts 引入）
+   · 明确不含：聚光灯（--fx-x/y · ::after radial · .fx-sheen）、
+     白光 sweep、toast
+   · 兼容既有 PressTilt（transform 通道）与 art-card-pop（translate 钉扎）：
+     倾斜用 translate/rotate 独立属性，避免互相覆盖
+   ============================================================ */
+
+:root {
+  --fx-ease: var(--ease-out-expo, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+/* ============================================================
+   1 · 磁吸按钮（.btn / button / [data-fx-mag]）
+   位移由 --fx-mx/--fx-my 注入，×0.16 鉗 ±4px；
+   hover scale 1.02 / 按下 0.97。双 class 提升特异性压过同级平局。
+   ============================================================ */
+.fx-mag.fx-mag {
+  --fx-mx: 0px;
+  --fx-my: 0px;
+  transition:
+    transform 0.24s var(--fx-ease),
+    color 0.15s ease,
+    background-color 0.2s ease,
+    border-color 0.15s ease,
+    box-shadow 0.2s ease,
+    filter 0.15s ease;
+}
+.fx-mag.fx-mag:hover {
+  transform: translate(var(--fx-mx), var(--fx-my)) scale(1.02);
+}
+.fx-mag.fx-mag:active {
+  transform: translate(var(--fx-mx), var(--fx-my)) scale(0.97);
+  transition-duration: 0.09s;
+}
+
+/* ============================================================
+   2 · 卡片 3D 倾斜（≤4deg + translateY(-4px)，离开回弹 + 阴影增强）
+   inline translate/rotate 由 fx-layer 写入；入场动画结束后
+   fxLock 解除 fill 钉扎再放开上浮。transition 刻意不含 transform，
+   避免平滑掉 PressTilt 的跟随插值。
+   ============================================================ */
+.fx-tilt {
+  will-change: transform;
+  transition:
+    translate 0.18s var(--fx-ease),
+    rotate 0.18s var(--fx-ease),
+    box-shadow 0.28s ease,
+    background-color 0.2s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    filter 0.15s ease,
+    opacity 0.15s ease;
+}
+.fx-tilt:not([data-tilt='dense']):hover {
+  box-shadow:
+    var(--shadow-lg),
+    0 18px 44px color-mix(in oklab, var(--hud) 16%, transparent);
+}
+
+/* ============================================================
+   3 · 点击涟漪（宿主需定位；fx-layer 注入 span.fx-ripple）
+   ============================================================ */
+.fx-ripple {
+  --fx-rs: 140px;
+  --fx-rl: 0px;
+  --fx-rt: 0px;
+  position: absolute;
+  left: var(--fx-rl);
+  top: var(--fx-rt);
+  width: var(--fx-rs);
+  height: var(--fx-rs);
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.5) 0%,
+    color-mix(in oklab, var(--hud) 45%, transparent) 42%,
+    color-mix(in oklab, var(--hud) 12%, transparent) 62%,
+    transparent 76%
+  );
+  transform: scale(0);
+  opacity: 0.7;
+  animation: fx-ripple 0.65s var(--fx-ease) forwards;
+}
+@keyframes fx-ripple {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* ============================================================
+   4 · 分段控件滑块（.fx-thumb 由 fx-layer 注入 ToggleGroup 容器）
+   半透明 thumb 垫在 item 之下（item 提层 z-index:1），
+   文字对比度不受影响；滑动 0.32s。
+   ============================================================ */
+.fx-seg {
+  position: relative;
+}
+.fx-seg > [role='radio'] {
+  position: relative;
+  z-index: 1;
+}
+.fx-thumb {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  bottom: 3px;
+  width: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 0;
+  background: color-mix(in oklab, var(--hud) 26%, transparent);
+  border: 1px solid color-mix(in oklab, var(--hud) 50%, transparent);
+  box-shadow: 0 0 14px color-mix(in oklab, var(--hud) 32%, transparent);
+  transform: translateX(0);
+  opacity: 0;
+  transition:
+    transform 0.32s var(--fx-ease),
+    width 0.32s var(--fx-ease),
+    opacity 0.28s ease;
+}
+.fx-thumb.is-ready {
+  opacity: 1;
+}
+
+/* ============================================================
+   5 · 表格行 hover 左侧青条（3px，滑入 + 辉光）
+   组件不归本层改 → CSS 直接选：既有 data-slot=table 标记 +
+   当前 table.tsx 实际输出的 table 元素兜底。
+   ============================================================ */
+[data-slot='table'] tbody tr,
+table tbody tr {
+  position: relative;
+}
+[data-slot='table'] tbody tr::before,
+table tbody tr::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14%;
+  bottom: 14%;
+  width: 3px;
+  border-radius: 3px;
+  pointer-events: none;
+  background: var(--hud);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--hud) 80%, transparent);
+  opacity: 0;
+  transform: translateX(-7px) scaleY(0.3);
+  transition:
+    transform 0.28s var(--fx-ease),
+    opacity 0.28s var(--fx-ease);
+}
+[data-slot='table'] tbody tr:hover::before,
+table tbody tr:hover::before {
+  opacity: 1;
+  transform: translateX(0) scaleY(1);
+}
+
+/* ============================================================
+   6 · 降低动效偏好（注册侧 fx-layer 已跳过磁吸/倾斜/涟漪，双保险）
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .fx-mag.fx-mag,
+  .fx-tilt,
+  .fx-ripple,
+  .fx-thumb,
+  [data-slot='table'] tbody tr::before,
+  table tbody tr::before {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

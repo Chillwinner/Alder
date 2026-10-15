@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.conversation.mapper.ImUserInboxMapper">
+
+    <select id="selectLastReadMessageId" resultType="java.lang.Long">
+        SELECT last_read_message_id
+        FROM im_user_inbox
+        WHERE user_id = #{userId}
+          AND conversation_id = #{conversationId}
+    </select>
+
+    <select id="selectPair" resultType="com.xddcodec.fs.conversation.domain.ImUserInbox">
+        SELECT user_id, conversation_id, unread_count, last_read_message_id, last_message_id,
+               last_content, last_time, pinned, muted, updated_at
+        FROM im_user_inbox
+        WHERE user_id = #{userId}
+          AND conversation_id = #{conversationId}
+    </select>
+
+    <select id="listInbox" resultType="com.xddcodec.fs.conversation.domain.vo.ImInboxVO">
+        SELECT i.conversation_id AS conversationId,
+               c.conv_type AS convType,
+               c.group_id AS groupId,
+               g.name AS groupName,
+               CASE
+                   WHEN c.conv_type = 'single' AND c.user_a_id = #{userId} THEN c.user_b_id
+                   WHEN c.conv_type = 'single' THEN c.user_a_id
+                   ELSE NULL END AS peerUserId,
+               pu.username AS peerUsername,
+               pu.nickname AS peerNickname,
+               pu.avatar AS peerAvatar,
+               g.avatar AS groupAvatar,
+               g.notice AS groupNotice,
+               i.unread_count AS unreadCount,
+               i.last_message_id AS lastMessageId,
+               i.last_content AS lastContent,
+               i.last_time AS lastTime,
+               i.pinned AS pinned,
+               i.muted AS muted
+        FROM im_user_inbox i
+                 JOIN im_conversation c ON c.id = i.conversation_id
+                 LEFT JOIN im_group g ON g.id = c.group_id
+                 LEFT JOIN sys_user pu ON pu.id = CASE
+                                                      WHEN c.conv_type = 'single' AND c.user_a_id = #{userId} THEN c.user_b_id
+                                                      WHEN c.conv_type = 'single' THEN c.user_a_id
+                                                      ELSE NULL END
+        WHERE i.user_id = #{userId}
+        ORDER BY i.pinned DESC, i.last_time DESC NULLS LAST
+    </select>
+
+    <select id="sumUnread" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(unread_count), 0)
+        FROM im_user_inbox
+        WHERE user_id = #{userId}
+    </select>
+
+    <insert id="ensureInbox">
+        INSERT INTO im_user_inbox (user_id, conversation_id, unread_count, last_read_message_id, updated_at)
+        VALUES (#{userId}, #{conversationId}, 0, 0, NOW())
+        ON CONFLICT (user_id, conversation_id) DO NOTHING
+    </insert>
+
+    <update id="bumpUnread">
+        INSERT INTO im_user_inbox (user_id, conversation_id, unread_count, last_read_message_id,
+                                   last_message_id, last_content, last_time, updated_at)
+        VALUES (#{userId}, #{conversationId}, 1, 0,
+                #{message.id}, LEFT(#{preview}, 256), #{message.createdAt}, NOW())
+        ON CONFLICT (user_id, conversation_id) DO UPDATE SET
+            unread_count = im_user_inbox.unread_count + 1,
+            last_message_id = EXCLUDED.last_message_id,
+            last_content = EXCLUDED.last_content,
+            last_time = EXCLUDED.last_time,
+            updated_at = NOW()
+    </update>
+
+    <update id="markRead">
+        UPDATE im_user_inbox
+        SET unread_count = 0,
+            last_read_message_id = GREATEST(last_read_message_id, #{lastId}),
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+          AND conversation_id = #{conversationId}
+    </update>
+
+    <update id="touchPreview">
+        INSERT INTO im_user_inbox (user_id, conversation_id, unread_count, last_read_message_id,
+                                   last_message_id, last_content, last_time, updated_at)
+        VALUES (#{userId}, #{conversationId}, 0, COALESCE(#{message.id}, 0),
+                #{message.id}, LEFT(#{preview}, 256), #{message.createdAt}, NOW())
+        ON CONFLICT (user_id, conversation_id) DO UPDATE SET
+            last_message_id = EXCLUDED.last_message_id,
+            last_content = EXCLUDED.last_content,
+            last_time = EXCLUDED.last_time,
+            updated_at = NOW()
+    </update>
+
+    <update id="replacePreviewIfLastMessage">
+        UPDATE im_user_inbox
+        SET last_content = LEFT(#{preview}, 256),
+            updated_at = NOW()
+        WHERE conversation_id = #{conversationId}
+          AND last_message_id = #{messageId}
+    </update>
+
+    <update id="updateMuted">
+        UPDATE im_user_inbox
+        SET muted = #{muted},
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+          AND conversation_id = #{conversationId}
+    </update>
+
+    <delete id="deleteInbox">
+        DELETE FROM im_user_inbox
+        WHERE user_id = #{userId}
+          AND conversation_id = #{conversationId}
+    </delete>
+
+    <delete id="deleteByConversation">
+        DELETE FROM im_user_inbox
+        WHERE conversation_id = #{conversationId}
+    </delete>
+</mapper>

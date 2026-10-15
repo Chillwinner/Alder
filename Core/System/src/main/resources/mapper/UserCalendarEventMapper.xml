@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.system.mapper.UserCalendarEventMapper">
+
+    <sql id="cols">
+        id,
+        user_id    AS userId,
+        title,
+        note,
+        starts_at  AS startsAt,
+        ends_at    AS endsAt,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+    </sql>
+
+    <insert id="insert">
+        INSERT INTO user_calendar_event
+            (id, user_id, title, note, starts_at, ends_at, created_at, updated_at)
+        VALUES
+            (#{id}, #{userId}, #{title}, #{note}, #{startsAt}, #{endsAt}, NOW(), NOW())
+    </insert>
+
+    <update id="updateOwn">
+        UPDATE user_calendar_event
+        SET title      = #{title},
+            note       = #{note},
+            starts_at  = #{startsAt},
+            ends_at    = #{endsAt},
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </update>
+
+    <delete id="deleteOwn">
+        DELETE FROM user_calendar_event
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </delete>
+
+    <select id="selectOwn" resultType="com.xddcodec.fs.system.domain.UserCalendarEvent">
+        SELECT <include refid="cols"/>
+        FROM user_calendar_event
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </select>
+
+    <select id="selectOverlapping" resultType="com.xddcodec.fs.system.domain.UserCalendarEvent">
+        SELECT <include refid="cols"/>
+        FROM user_calendar_event
+        WHERE user_id = #{userId}
+          AND starts_at &lt; #{to}
+          AND ends_at &gt; #{from}
+        ORDER BY starts_at ASC
+    </select>
+</mapper>

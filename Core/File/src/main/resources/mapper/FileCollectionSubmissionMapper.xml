@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.file.mapper.FileCollectionSubmissionMapper">
+
+    <insert id="insert">
+        INSERT INTO file_collection_submissions
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="collectionId != null">collection_id,</if>
+            <if test="submitterName != null">submitter_name,</if>
+            <if test="submitterUserId != null">submitter_user_id,</if>
+            <if test="submitterIp != null">submitter_ip,</if>
+            <if test="userAgent != null">user_agent,</if>
+            <if test="folderId != null">folder_id,</if>
+            <if test="uploadTokenHash != null">upload_token_hash,</if>
+            <if test="fileCount != null">file_count,</if>
+            <if test="totalSize != null">total_size,</if>
+            <if test="status != null">status,</if>
+            <if test="completedAt != null">completed_at,</if>
+            created_at,
+            updated_at,
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="collectionId != null">#{collectionId},</if>
+            <if test="submitterName != null">#{submitterName},</if>
+            <if test="submitterUserId != null">#{submitterUserId},</if>
+            <if test="submitterIp != null">#{submitterIp},</if>
+            <if test="userAgent != null">#{userAgent},</if>
+            <if test="folderId != null">#{folderId},</if>
+            <if test="uploadTokenHash != null">#{uploadTokenHash},</if>
+            <if test="fileCount != null">#{fileCount},</if>
+            <if test="totalSize != null">#{totalSize},</if>
+            <if test="status != null">#{status},</if>
+            <if test="completedAt != null">#{completedAt},</if>
+            now(),
+            now(),
+        </trim>
+    </insert>
+
+    <update id="updateById">
+        UPDATE file_collection_submissions
+        <set>
+            <if test="collectionId != null">collection_id = #{collectionId},</if>
+            <if test="submitterName != null">submitter_name = #{submitterName},</if>
+            <if test="submitterIp != null">submitter_ip = #{submitterIp},</if>
+            <if test="userAgent != null">user_agent = #{userAgent},</if>
+            <if test="folderId != null">folder_id = #{folderId},</if>
+            <if test="uploadTokenHash != null">upload_token_hash = #{uploadTokenHash},</if>
+            <if test="fileCount != null">file_count = #{fileCount},</if>
+            <if test="totalSize != null">total_size = #{totalSize},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="completedAt != null">completed_at = #{completedAt},</if>
+            updated_at = now(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectPageByCollectionId" resultType="com.xddcodec.fs.File.domain.FileCollectionSubmission">
+        SELECT *
+        FROM file_collection_submissions
+        WHERE collection_id = #{collectionId}
+        <if test="keyword != null and keyword != ''">
+            AND submitter_name LIKE '%' || #{keyword} || '%'
+        </if>
+        ORDER BY created_at DESC
+    </select>
+</mapper>

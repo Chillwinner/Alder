@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.system.mapper.SysUserTransferSettingMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user_transfer_setting
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="downloadLocation != null">download_location,</if>
+            <if test="isDefaultDownloadLocation != null">is_default_download_location,</if>
+            <if test="downloadSpeedLimit != null">download_speed_limit,</if>
+            <if test="concurrentUploadQuantity != null">concurrent_upload_quantity,</if>
+            <if test="concurrentDownloadQuantity != null">concurrent_download_quantity,</if>
+            <if test="chunkSize != null">chunk_size,</if>
+            created_at,
+            updated_at,
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="downloadLocation != null">#{downloadLocation},</if>
+            <if test="isDefaultDownloadLocation != null">#{isDefaultDownloadLocation},</if>
+            <if test="downloadSpeedLimit != null">#{downloadSpeedLimit},</if>
+            <if test="concurrentUploadQuantity != null">#{concurrentUploadQuantity},</if>
+            <if test="concurrentDownloadQuantity != null">#{concurrentDownloadQuantity},</if>
+            <if test="chunkSize != null">#{chunkSize},</if>
+            now(),
+            now(),
+        </trim>
+    </insert>
+
+    <update id="updateById">
+        UPDATE sys_user_transfer_setting
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="downloadLocation != null">download_location = #{downloadLocation},</if>
+            <if test="isDefaultDownloadLocation != null">is_default_download_location = #{isDefaultDownloadLocation},</if>
+            <if test="downloadSpeedLimit != null">download_speed_limit = #{downloadSpeedLimit},</if>
+            <if test="concurrentUploadQuantity != null">concurrent_upload_quantity = #{concurrentUploadQuantity},</if>
+            <if test="concurrentDownloadQuantity != null">concurrent_download_quantity = #{concurrentDownloadQuantity},</if>
+            <if test="chunkSize != null">chunk_size = #{chunkSize},</if>
+            updated_at = now(),
+        </set>
+        WHERE id = #{id}
+    </update>
+</mapper>

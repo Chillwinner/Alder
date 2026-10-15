@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.file.mapper.FileTransferTaskMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO file_transfer_task
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="taskId != null">task_id,</if>
+            <if test="uploadId != null">upload_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="workspaceId != null">workspace_id,</if>
+            <if test="collectionId != null">collection_id,</if>
+            <if test="collectionSubmissionId != null">collection_submission_id,</if>
+            <if test="parentId != null">parent_id,</if>
+            <if test="objectKey != null">object_key,</if>
+            <if test="fileId != null">file_id,</if>
+            <if test="fileName != null">file_name,</if>
+            <if test="fileSize != null">file_size,</if>
+            <if test="fileMd5 != null">file_md5,</if>
+            <if test="suffix != null">suffix,</if>
+            <if test="mimeType != null">mime_type,</if>
+            <if test="totalChunks != null">total_chunks,</if>
+            <if test="taskType != null">task_type,</if>
+            <if test="uploadedChunks != null">uploaded_chunks,</if>
+            <if test="chunkSize != null">chunk_size,</if>
+            <if test="storagePlatformSettingId != null">storage_platform_setting_id,</if>
+            <if test="status != null">status,</if>
+            <if test="errorMsg != null">error_msg,</if>
+            <if test="startTime != null">start_time,</if>
+            <if test="completeTime != null">complete_time,</if>
+            created_at,
+            updated_at,
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="taskId != null">#{taskId},</if>
+            <if test="uploadId != null">#{uploadId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="workspaceId != null">#{workspaceId},</if>
+            <if test="collectionId != null">#{collectionId},</if>
+            <if test="collectionSubmissionId != null">#{collectionSubmissionId},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="objectKey != null">#{objectKey},</if>
+            <if test="fileId != null">#{fileId},</if>
+            <if test="fileName != null">#{fileName},</if>
+            <if test="fileSize != null">#{fileSize},</if>
+            <if test="fileMd5 != null">#{fileMd5},</if>
+            <if test="suffix != null">#{suffix},</if>
+            <if test="mimeType != null">#{mimeType},</if>
+            <if test="totalChunks != null">#{totalChunks},</if>
+            <if test="taskType != null">#{taskType},</if>
+            <if test="uploadedChunks != null">#{uploadedChunks},</if>
+            <if test="chunkSize != null">#{chunkSize},</if>
+            <if test="storagePlatformSettingId != null">#{storagePlatformSettingId},</if>
+            <if test="status != null">#{status},</if>
+            <if test="errorMsg != null">#{errorMsg},</if>
+            <if test="startTime != null">#{startTime},</if>
+            <if test="completeTime != null">#{completeTime},</if>
+            now(),
+            now(),
+        </trim>
+    </insert>
+
+    <update id="updateById">
+        UPDATE file_transfer_task
+        <set>
+            <if test="taskId != null">task_id = #{taskId},</if>
+            <if test="uploadId != null">upload_id = #{uploadId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="workspaceId != null">workspace_id = #{workspaceId},</if>
+            <if test="collectionId != null">collection_id = #{collectionId},</if>
+            <if test="collectionSubmissionId != null">collection_submission_id = #{collectionSubmissionId},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="objectKey != null">object_key = #{objectKey},</if>
+            <if test="fileId != null">file_id = #{fileId},</if>
+            <if test="fileName != null">file_name = #{fileName},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="fileMd5 != null">file_md5 = #{fileMd5},</if>
+            <if test="suffix != null">suffix = #{suffix},</if>
+            <if test="mimeType != null">mime_type = #{mimeType},</if>
+            <if test="totalChunks != null">total_chunks = #{totalChunks},</if>
+            <if test="taskType != null">task_type = #{taskType},</if>
+            <if test="uploadedChunks != null">uploaded_chunks = #{uploadedChunks},</if>
+            <if test="chunkSize != null">chunk_size = #{chunkSize},</if>
+            <if test="storagePlatformSettingId != null">storage_platform_setting_id = #{storagePlatformSettingId},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="errorMsg != null">error_msg = #{errorMsg},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="completeTime != null">complete_time = #{completeTime},</if>
+            updated_at = now(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <sql id="storageScope">
+        <choose>
+            <when test="storagePlatformSettingId == null or storagePlatformSettingId == ''">
+                AND storage_platform_setting_id IS NULL
+            </when>
+            <otherwise>
+                AND (storage_platform_setting_id = #{storagePlatformSettingId}
+                    OR storage_platform_setting_id IS NULL)
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="notCollectionTask">
+        AND collection_id IS NULL
+        AND collection_submission_id IS NULL
+    </sql>
+
+    <select id="selectByTaskId" resultType="com.xddcodec.fs.File.domain.FileTransferTask">
+        SELECT *
+        FROM file_transfer_task
+        WHERE task_id = #{taskId}
+    </select>
+
+    <select id="selectTransferList" resultType="com.xddcodec.fs.File.domain.FileTransferTask">
+        SELECT *
+        FROM file_transfer_task
+        WHERE user_id = #{userId}
+          AND workspace_id = #{workspaceId}
+        <include refid="notCollectionTask"/>
+        <include refid="storageScope"/>
+        <if test="statusType == 1">
+            AND task_type = 'upload'
+            AND status IN ('initialized', 'checking', 'uploading', 'paused', 'merging')
+        </if>
+        <if test="statusType == 2">
+            AND task_type = 'download'
+            AND status IN ('initialized', 'checking', 'downloading', 'paused', 'merging')
+        </if>
+        <if test="statusType == 3">
+            AND status IN ('completed', 'failed', 'canceled')
+        </if>
+        ORDER BY created_at ASC
+    </select>
+
+    <select id="selectCompletedTransfers" resultType="com.xddcodec.fs.File.domain.FileTransferTask">
+        SELECT *
+        FROM file_transfer_task
+        WHERE status IN ('completed', 'failed', 'canceled')
+          AND user_id = #{userId}
+          AND workspace_id = #{workspaceId}
+        <include refid="notCollectionTask"/>
+        <include refid="storageScope"/>
+    </select>
+
+    <delete id="deleteCompletedTransfers">
+        DELETE FROM file_transfer_task
+        WHERE status IN ('completed', 'failed', 'canceled')
+          AND user_id = #{userId}
+          AND workspace_id = #{workspaceId}
+        <include refid="notCollectionTask"/>
+        <include refid="storageScope"/>
+    </delete>
+
+    <select id="selectCompletedOrCanceledBefore" resultType="com.xddcodec.fs.File.domain.FileTransferTask">
+        SELECT *
+        FROM file_transfer_task
+        WHERE status IN ('completed', 'canceled')
+          AND updated_at &lt; #{before}
+    </select>
+
+    <select id="selectFailedBefore" resultType="com.xddcodec.fs.File.domain.FileTransferTask">
+        SELECT *
+        FROM file_transfer_task
+        WHERE status = 'failed'
+          AND updated_at &lt; #{before}
+    </select>
+
+    <select id="selectInactiveBefore" resultType="com.xddcodec.fs.File.domain.FileTransferTask">
+        SELECT *
+        FROM file_transfer_task
+        WHERE status IN ('initialized', 'checking', 'uploading', 'paused', 'merging')
+          AND updated_at &lt; #{before}
+    </select>
+
+    <delete id="deleteByIds">
+        DELETE FROM file_transfer_task
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectTerminalByCollection" resultType="com.xddcodec.fs.File.domain.FileTransferTask">
+        SELECT *
+        FROM file_transfer_task
+        WHERE collection_id = #{collectionId}
+          AND workspace_id = #{workspaceId}
+          AND status IN ('completed', 'failed', 'canceled')
+    </select>
+
+    <delete id="deleteTerminalByCollection">
+        DELETE FROM file_transfer_task
+        WHERE collection_id = #{collectionId}
+          AND workspace_id = #{workspaceId}
+          AND status IN ('completed', 'failed', 'canceled')
+    </delete>
+
+    <select id="countByCollectionSubmissionId" resultType="long">
+        SELECT COUNT(1)
+        FROM file_transfer_task
+        WHERE collection_submission_id = #{collectionSubmissionId}
+    </select>
+</mapper>

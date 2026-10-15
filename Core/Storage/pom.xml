@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.xddcodec.fs</groupId>
+        <artifactId>Core</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <artifactId>Storage</artifactId>
+
+    <description>
+        Storage - 存储管理模块，负责文件存储和多种存储平台的集成
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.xddcodec.fs</groupId>
+            <artifactId>Common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.xddcodec.fs</groupId>
+            <artifactId>Log</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.xddcodec.fs</groupId>
+            <artifactId>Utils</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

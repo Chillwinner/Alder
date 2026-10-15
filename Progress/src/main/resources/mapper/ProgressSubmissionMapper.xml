@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.progress.mapper.ProgressSubmissionMapper">
+
+    <insert id="insert">
+        INSERT INTO progress_submission (id, task_id, user_id, day, progress_before, progress_after, review_status,
+                                         note, created_at)
+        VALUES (#{id}, #{taskId}, #{userId}, #{day}, #{progressBefore}, #{progressAfter}, #{reviewStatus},
+                #{note}, NOW())
+    </insert>
+
+    <select id="selectById" resultType="com.xddcodec.fs.progress.domain.ProgressSubmission">
+        SELECT *
+        FROM progress_submission
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectLatestPending" resultType="com.xddcodec.fs.progress.domain.ProgressSubmission">
+        SELECT *
+        FROM progress_submission
+        WHERE task_id = #{taskId}
+          AND review_status = 'PENDING'
+        ORDER BY created_at DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectDaily" resultType="com.xddcodec.fs.progress.domain.ProgressSubmission">
+        SELECT *
+        FROM progress_submission
+        WHERE task_id = #{taskId}
+          AND day = #{day}
+        LIMIT 1
+    </select>
+
+    <update id="updateReview">
+        UPDATE progress_submission
+        SET review_status = #{reviewStatus}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertFile">
+        INSERT INTO progress_submission_file (submission_id, file_id)
+        VALUES (#{submissionId}, #{fileId})
+    </insert>
+
+    <select id="listHits" resultType="com.xddcodec.fs.progress.domain.ProgressDayHit">
+        SELECT s.task_id   AS taskId,
+               t.title     AS title,
+               s.user_id   AS userId,
+               COALESCE(s.day, CAST(s.created_at AS DATE)) AS day,
+               s.review_status AS reviewStatus,
+               t.kind      AS kind
+        FROM progress_submission s
+                 JOIN progress_task t ON t.id = s.task_id
+        WHERE t.workspace_id = #{workspaceId}
+          AND COALESCE(s.day, CAST(s.created_at AS DATE)) BETWEEN #{from} AND #{to}
+        ORDER BY day, title
+    </select>
+</mapper>

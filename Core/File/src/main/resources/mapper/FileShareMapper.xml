@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.file.mapper.FileShareMapper">
+
+    <insert id="insert">
+        INSERT INTO file_shares
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="workspaceId != null">workspace_id,</if>
+            <if test="shareName != null">share_name,</if>
+            <if test="shareCode != null">share_code,</if>
+            <if test="expireTime != null">expire_time,</if>
+            <if test="scope != null">scope,</if>
+            <if test="viewCount != null">view_count,</if>
+            <if test="downloadCount != null">download_count,</if>
+            <if test="maxViewCount != null">max_view_count,</if>
+            <if test="maxDownloadCount != null">max_download_count,</if>
+            created_at,
+            updated_at,
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="workspaceId != null">#{workspaceId},</if>
+            <if test="shareName != null">#{shareName},</if>
+            <if test="shareCode != null">#{shareCode},</if>
+            <if test="expireTime != null">#{expireTime},</if>
+            <if test="scope != null">#{scope},</if>
+            <if test="viewCount != null">#{viewCount},</if>
+            <if test="downloadCount != null">#{downloadCount},</if>
+            <if test="maxViewCount != null">#{maxViewCount},</if>
+            <if test="maxDownloadCount != null">#{maxDownloadCount},</if>
+            now(),
+            now(),
+        </trim>
+    </insert>
+
+
+    <select id="selectPage" resultType="com.xddcodec.fs.File.domain.FileShare">
+        SELECT *
+        FROM file_shares
+        WHERE workspace_id = #{workspaceId}
+        <if test="keyword != null and keyword != ''">
+            AND share_name LIKE '%' || #{keyword} || '%'
+        </if>
+        <choose>
+            <when test="orderBy == 'share_name' and isAsc == true">ORDER BY share_name ASC, id DESC</when>
+            <when test="orderBy == 'share_name' and isAsc != true">ORDER BY share_name DESC, id DESC</when>
+            <when test="orderBy == 'expire_time' and isAsc == true">ORDER BY expire_time ASC, id DESC</when>
+            <when test="orderBy == 'expire_time' and isAsc != true">ORDER BY expire_time DESC, id DESC</when>
+            <when test="orderBy == 'view_count' and isAsc == true">ORDER BY view_count ASC, id DESC</when>
+            <when test="orderBy == 'view_count' and isAsc != true">ORDER BY view_count DESC, id DESC</when>
+            <when test="orderBy == 'download_count' and isAsc == true">ORDER BY download_count ASC, id DESC</when>
+            <when test="orderBy == 'download_count' and isAsc != true">ORDER BY download_count DESC, id DESC</when>
+            <when test="isAsc == true">ORDER BY created_at ASC, id DESC</when>
+            <otherwise>ORDER BY created_at DESC, id DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectByIdsAndWorkspace" resultType="com.xddcodec.fs.File.domain.FileShare">
+        SELECT *
+        FROM file_shares
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+          AND workspace_id = #{workspaceId}
+    </select>
+
+    <delete id="deleteByIds">
+        DELETE FROM file_shares
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

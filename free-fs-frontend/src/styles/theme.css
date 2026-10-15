@@ -1,0 +1,352 @@
+/* ============================================================
+   Alder — Design Tokens（shadcn New York · Zinc 中性）
+
+   原则：
+     · 颜色全部走语义 token（bg-background / text-muted-foreground …）
+     · 强调色 = 中性（浅色近黑 / 深色近白），不再有品牌彩色
+     · 圆角单一标准 --radius，阴影只有轻/中两档
+     · 文件类型色 --t-* 仅给图标用（功能色）
+     · 动效：弹簧 + 标准 ease-out，质感靠"动作"而不是"材质"
+
+   ⚠️ 旧变量名全部保留（--glass-* / --glow-* / --hud / --ease-*），
+      值被改成"扁平等价物"：组件层不用动，旧类名自动变朴素。
+      后续审计阶段再逐步把引用点迁移到语义 token，最后删除这些别名。
+   ============================================================ */
+
+:root {
+  /* ---- 画布 ---- */
+  --app-bg: #fafafa;
+  --background: #fafafa;
+  --workspace-bg: #fafafa;
+  --chat-bg: #ffffff;
+  --foreground: #18181b;
+
+  /* ---- 面 ---- */
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+  --surface: #ffffff;
+  --surface-secondary: #f4f4f5;
+  --surface-3: #e4e4e7;
+  --surface-hover: #f4f4f5;
+  --surface-active: #e4e4e7;
+  --divider: #e4e4e7;
+
+  /* ---- 强调（中性） ---- */
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --accent-soft: rgba(24, 24, 27, 0.06);
+  --accent-hover: #27272a;
+  --chat-self: #f4f4f5;
+
+  /* ---- 状态（降饱和） ---- */
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+
+  /* ---- 线 ---- */
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --input: #e4e4e7;
+  --ring: #a1a1aa;
+
+  /* ---- 图表（中性主导 + 少量色相用于区分） ---- */
+  --chart-1: #18181b;
+  --chart-2: #52525b;
+  --chart-3: #2563eb;
+  --chart-4: #d97706;
+  --chart-5: #16a34a;
+
+  /* ---- 侧栏 ---- */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #52525b;
+  --sidebar-primary: #18181b;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #a1a1aa;
+
+  /* ---- 文字层级 ---- */
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+
+  /* ---- 字体（保留原回退链，中文顺序别动：见 git 历史的清晰度说明） ---- */
+  --font-sans:
+    'Geist', ui-sans-serif, system-ui, 'Noto Sans SC', 'MiSans',
+    'HarmonyOS Sans SC', 'Source Han Sans SC', 'PingFang SC',
+    'Microsoft YaHei', 'Segoe UI', sans-serif;
+  --font-serif: 'Noto Serif SC', Georgia, serif;
+  --font-mono:
+    'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
+  --radius: 0.625rem;
+
+  /* ---- 阴影：轻 / 中两档，其余别名到这两档 ---- */
+  --shadow-2xs: 0 1px 1px rgba(0, 0, 0, 0.04);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 2px 6px -2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 8px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 20px -6px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 18px 36px -10px rgba(0, 0, 0, 0.14), 0 6px 12px -6px rgba(0, 0, 0, 0.07);
+  --shadow-2xl: 0 28px 56px -14px rgba(0, 0, 0, 0.18), 0 10px 20px -10px rgba(0, 0, 0, 0.08);
+
+  /* ---- 动效 ---- */
+  --motion-fast: 140ms;
+  --motion-micro: 180ms;
+  --motion-normal: 260ms;
+  --motion-panel: 420ms;
+  --motion-page: 520ms;
+  /* ease-out-expo 作为主曲线；spring 仅用于"有重量"的物体（气泡/拖拽落点） */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-ios: var(--ease-out-expo);
+  --ease-glide: var(--ease-out-expo);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-back: linear(
+    0, 0.146 4.5%, 0.462 9.6%, 0.744 15%, 0.938 20.6%, 1.056 27%, 1.114 34%,
+    1.116 42%, 1.083 50%, 1.032 60%, 0.995 70%, 0.985 78%, 0.995 88%, 1
+  );
+
+  /* ---- 旧"玻璃"别名 → 扁平等价物（blur 置 0，边/影走标准 token） ---- */
+  --glass: var(--card);
+  --glass-strong: var(--card);
+  --glass-thin: var(--surface-secondary);
+  --glass-blur: 0px;
+  --glass-sat: 100%;
+  --glass-rim: transparent;
+  --glass-ring: 0 0 0 0 transparent;
+  --glass-inset: 0 0 0 0 transparent;
+  --glass-lift: var(--shadow-sm);
+  --glass-lift-hover: var(--shadow-md);
+  --glass-shell-bg: var(--card);
+  --glass-card-bg: var(--card);
+  --glass-overlay-bg: var(--popover);
+  --glass-border: var(--border);
+
+  /* ---- 环境光（旧光斑）：保留变量，index.css 里的光斑层已关闭 ---- */
+  --glow-a: transparent;
+  --glow-a-2: transparent;
+  --glow-b: transparent;
+  --glow-b-2: transparent;
+  --glow-c: transparent;
+  --glow-c-2: transparent;
+  --glow-d: transparent;
+  --glow-d-2: transparent;
+
+  /* 旧 HUD 变量 → 中性前景 */
+  --hud: #18181b;
+  --hud-bright: #52525b;
+  --grid-line: transparent;
+
+  /* ---- 文件类型色（只给图标用） ---- */
+  --t-doc: #4285f4;
+  --t-pdf: #ea4335;
+  --t-sheet: #34a853;
+  --t-slide: #fbbc04;
+  --t-image: #a142f4;
+  --t-video: #f5385d;
+  --t-audio: #ff6d01;
+  --t-archive: #8d6e63;
+  --t-code: #00a0b0;
+  --t-folder: #5b8def;
+  --t-unknown: #9aa0a6;
+
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --app-bg: #09090b;
+  --background: #09090b;
+  --workspace-bg: #09090b;
+  --chat-bg: #0c0c0f;
+  --foreground: #fafafa;
+
+  --card: #111114;
+  --card-foreground: #fafafa;
+  --popover: #141418;
+  --popover-foreground: #fafafa;
+  --surface: #111114;
+  --surface-secondary: #18181b;
+  --surface-3: #27272a;
+  --surface-hover: #1c1c20;
+  --surface-active: #27272a;
+  --divider: #27272a;
+
+  --primary: #fafafa;
+  --primary-foreground: #18181b;
+  --secondary: #1f1f23;
+  --secondary-foreground: #fafafa;
+  --muted: #1f1f23;
+  --muted-foreground: #a1a1aa;
+  --accent: #1f1f23;
+  --accent-foreground: #fafafa;
+  --accent-soft: rgba(250, 250, 250, 0.08);
+  --accent-hover: #e4e4e7;
+  --chat-self: #1f1f23;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  --border: #27272a;
+  --border-strong: #3f3f46;
+  --input: #2a2a2f;
+  --ring: #71717a;
+
+  --chart-1: #fafafa;
+  --chart-2: #a1a1aa;
+  --chart-3: #60a5fa;
+  --chart-4: #fbbf24;
+  --chart-5: #4ade80;
+
+  --sidebar: #0c0c0f;
+  --sidebar-foreground: #a1a1aa;
+  --sidebar-primary: #fafafa;
+  --sidebar-primary-foreground: #18181b;
+  --sidebar-accent: #1f1f23;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #27272a;
+  --sidebar-ring: #71717a;
+
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  /* 暗色阴影：靠边框分层，投影只做轻微下沉 */
+  --shadow-2xs: 0 1px 1px rgba(0, 0, 0, 0.4);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 6px 14px -4px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 12px 24px -8px rgba(0, 0, 0, 0.65);
+  --shadow-xl: 0 20px 40px -12px rgba(0, 0, 0, 0.7);
+  --shadow-2xl: 0 30px 60px -16px rgba(0, 0, 0, 0.75);
+
+  --glass: var(--card);
+  --glass-strong: var(--card);
+  --glass-thin: var(--surface-secondary);
+  --glass-overlay-bg: var(--popover);
+  --glass-border: var(--border);
+
+  --hud: #fafafa;
+  --hud-bright: #a1a1aa;
+
+  /* ---- 文件类型色（暗色下提亮） ---- */
+  --t-doc: #78adff;
+  --t-pdf: #ff6f61;
+  --t-sheet: #5ccc7c;
+  --t-slide: #ffd24a;
+  --t-image: #c08cff;
+  --t-video: #ff6f8c;
+  --t-audio: #ff9a4d;
+  --t-archive: #b8a196;
+  --t-code: #3fcadb;
+  --t-folder: #7fa9ff;
+  --t-unknown: #a8a8ae;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-chat-self: var(--chat-self);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-app-bg: var(--app-bg);
+  --color-workspace-bg: var(--workspace-bg);
+  --color-chat-bg: var(--chat-bg);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-3: var(--surface-3);
+  --color-divider: var(--divider);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-active: var(--surface-active);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-hud: var(--hud);
+  --color-hud-bright: var(--hud-bright);
+  /* 文件类型色也进 Tailwind，图标可以直接 text-t-doc / bg-t-sheet */
+  --color-t-doc: var(--t-doc);
+  --color-t-pdf: var(--t-pdf);
+  --color-t-sheet: var(--t-sheet);
+  --color-t-slide: var(--t-slide);
+  --color-t-image: var(--t-image);
+  --color-t-video: var(--t-video);
+  --color-t-audio: var(--t-audio);
+  --color-t-archive: var(--t-archive);
+  --color-t-code: var(--t-code);
+  --color-t-folder: var(--t-folder);
+  --color-t-unknown: var(--t-unknown);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  /* shadcn 标准圆角阶梯 */
+  --radius-xs: calc(var(--radius) - 6px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 2px);
+  --radius-2xl: calc(var(--radius) + 4px);
+  --radius-3xl: calc(var(--radius) + 8px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}

@@ -1,0 +1,25 @@
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /src
+COPY pom.xml .
+COPY Common Common
+COPY Utils Utils
+COPY Core Core
+COPY Conversation Conversation
+COPY LanTransfer LanTransfer
+COPY Progress Progress
+COPY WorkspaceBoard WorkspaceBoard
+COPY Meeting Meeting
+COPY Ai Ai
+COPY Gateway Gateway
+RUN mvn -pl Gateway -am -DskipTests package
+
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /src/Gateway/target/Gateway.jar /app/app.jar
+COPY Gateway/src/main/resources/application.example.yml /app/config/application.yml
+COPY Gateway/src/main/resources/application-docker.example.yml /app/config/application-docker.yml
+RUN mkdir -p /data/uploads
+EXPOSE 8080
+ENV SPRING_PROFILES_ACTIVE=docker
+ENV SPRING_CONFIG_ADDITIONAL_LOCATION=optional:file:/app/config/
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

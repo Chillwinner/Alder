@@ -1,0 +1,101 @@
+{
+  "loading": "載入中...",
+  "workspaceListError": "無法載入工作空間列表",
+  "refreshOrRelogin": "請刷新頁面或重新登入",
+  "workspaceLoadError": "工作空間載入失敗，請重試",
+  "retry": "重試",
+  "backHome": "返回首頁",
+  "close": "關閉",
+  "cancel": "取消",
+  "notFound": {
+    "title": "抱歉，您訪問的頁面不存在",
+    "back": "返回首頁"
+  },
+  "profile": {
+    "title": "個人中心",
+    "description": "個人中心頁面"
+  },
+  "api": {
+    "loginFailed": "登入失敗",
+    "noPermission": "沒有操作權限",
+    "operationFailed": "操作失敗",
+    "networkFailed": "網絡請求失敗",
+    "badRequest": "請求參數錯誤",
+    "wrongCredentials": "賬號或密碼錯誤",
+    "notFound": "請求的資源不存在",
+    "serverError": "伺服器內部錯誤",
+    "requestFailed": "請求失敗 ({{status}})",
+    "timeout": "請求超時，請檢查網絡連接",
+    "networkError": "網絡連接失敗，請檢查網絡"
+  },
+  "listTotalItems": "共 {{count}} 項",
+  "searchShortcut": "搜尋或執行命令…",
+  "commandMenu": {
+    "title": "命令面板",
+    "placeholderAll": "搜尋檔案、跳轉頁面或執行操作…",
+    "placeholderScoped": "輸入關鍵字搜尋此類檔案…",
+    "clear": "清空",
+    "closeAria": "關閉",
+    "empty": "沒有符合的命令",
+    "searchHeading": "搜尋",
+    "searchFiles": "在檔案中搜尋「{{query}}」",
+    "typeHeading": "檔案類型（可選）",
+    "goHeading": "前往",
+    "actionHeading": "操作",
+    "settingsHeading": "設定",
+    "openMessages": "打開訊息",
+    "toggleTheme": "切換淺色 / 深色",
+    "types": {
+      "image": "圖片",
+      "video": "影片",
+      "folder": "資料夾",
+      "document": "文檔",
+      "audio": "音頻"
+    },
+    "footerHint": "輸入可篩選命令；選檔案類型後再輸入關鍵字搜尋",
+    "footerFilter": "回車執行反白項；也可選「在檔案中搜尋」"
+  },
+  "shortcuts": {
+    "cheatsheetTitle": "快捷鍵"
+  },
+  "format": {
+    "todayTime": "今天 {{time}}",
+    "todayListRow": "今天 | {{time}}"
+  },
+  "preview": {
+    "title": "檔案預覽",
+    "loadFailed": "預覽檔案失敗，請稍後重試",
+    "unsupportedType": "暫不支持該格式在線預覽（舊版 Word、drawio 等）",
+    "emptyFile": "檔案內容為空",
+    "excelXlsOnly": "舊版 .xls 暫不支持預覽，請先另存為 .xlsx",
+    "archiveEmpty": "壓縮包裡沒有檔案",
+    "archiveEncrypted": "加密壓縮包暫不支持預覽目錄",
+    "archiveSummary": "{{folders}} 個資料夾 · {{files}} 個檔案",
+    "closeWindow": "關閉",
+    "minimizeWindow": "關閉",
+    "maximizeWindow": "全螢幕",
+    "restoreWindow": "還原"
+  },
+  "fileErrors": {
+    "readFailed": "檔案讀取失敗",
+    "chunkReadFailed": "分片讀取失敗"
+  },
+  "pagination": {
+    "pageOf": "第 {{current}} 頁，共 {{total}} 頁",
+    "rowsPerPage": "每頁條數",
+    "first": "首頁",
+    "prev": "上一頁",
+    "next": "下一頁",
+    "last": "末頁",
+    "pageSr": "第 {{n}} 頁"
+  },
+  "bulkSelection": {
+    "suffix": "項已選擇",
+    "defaultToolbarName": "批量操作",
+    "toolbarAria": "{{label}}，已選 {{count}} 項",
+    "countBadgeAria": "已選 {{count}} 項",
+    "clear": "取消選擇",
+    "clearHint": "取消選擇 (Esc)",
+    "announce": "已選擇 {{count}} 項，批量操作欄可用。"
+  }
+}

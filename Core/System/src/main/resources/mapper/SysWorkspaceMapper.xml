@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.system.mapper.SysWorkspaceMapper">
+
+    <insert id="insert">
+        INSERT INTO sys_workspace
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="name != null">name,</if>
+            <if test="slug != null">slug,</if>
+            <if test="description != null">description,</if>
+            <if test="ownerId != null">owner_id,</if>
+            <if test="memberCount != null">member_count,</if>
+            created_at,
+            updated_at,
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="name != null">#{name},</if>
+            <if test="slug != null">#{slug},</if>
+            <if test="description != null">#{description},</if>
+            <if test="ownerId != null">#{ownerId},</if>
+            <if test="memberCount != null">#{memberCount},</if>
+            now(),
+            now(),
+        </trim>
+    </insert>
+
+    <update id="updateById">
+        UPDATE sys_workspace
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="slug != null">slug = #{slug},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="ownerId != null">owner_id = #{ownerId},</if>
+            <if test="memberCount != null">member_count = #{memberCount},</if>
+            <if test="fileshareFolderId != null">fileshare_folder_id = #{fileshareFolderId},</if>
+            <if test="ragFolderId != null">rag_folder_id = #{ragFolderId},</if>
+            <if test="localQuotaBytes != null">local_quota_bytes = #{localQuotaBytes},</if>
+            updated_at = now(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateFileshareFolderId">
+        UPDATE sys_workspace
+        SET fileshare_folder_id = #{fileshareFolderId},
+            updated_at          = NOW()
+        WHERE id = #{workspaceId}
+    </update>
+
+    <update id="updateRagFolderId">
+        UPDATE sys_workspace
+        SET rag_folder_id = #{ragFolderId},
+            updated_at    = NOW()
+        WHERE id = #{workspaceId}
+    </update>
+
+
+    <select id="selectByUserId" resultType="com.xddcodec.fs.System.domain.SysWorkspace">
+        SELECT w.*
+        FROM sys_workspace w
+                 INNER JOIN sys_workspace_member m ON w.id = m.workspace_id
+        WHERE m.user_id = #{userId}
+    </select>
+</mapper>

@@ -1,0 +1,1636 @@
+/* ============================================================
+   messages-fx.css — 消息「对话舱」质感与生命力动效
+   仅服务 src/components/messages/**：
+     1) 舱体玻璃 + 开合弹簧 + mount 入场
+     2) 顶部流光条（::before 缓慢平移）
+     3) 舱窗点（红黄绿）+ COMMS 装饰标签
+     4) 气泡弹性入场（them 左下 / me 右下锚点）
+     5) 「对方正在输入」三点跳动气泡
+     6) 会话切换消息列表滑入转场
+     7) 输入区呼吸 + 发送键就绪辉光
+   说明：本文件为非分层（unlayered）样式，级联中天然高于
+   Tailwind utilities 与 @layer 组件层，可直接覆盖旧动画类；
+   变换一律使用独立属性 scale/translate，避免与面板拖拽写入的
+   内联 transform 互相覆盖。
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. 舱体：更厚 backdrop-blur + 弹簧开合 + mount 入场
+   （关闭态用 scale + blur 渐隐；visibility 由 utility 提供，
+     经本 transition 延迟到淡出结束才真正隐藏）
+   ------------------------------------------------------------ */
+.im-pod {
+  backdrop-filter: blur(30px) saturate(1.5);
+  -webkit-backdrop-filter: blur(30px) saturate(1.5);
+  transition:
+    scale 0.5s cubic-bezier(0.2, 1.25, 0.35, 1),
+    translate 0.45s cubic-bezier(0.2, 1.25, 0.35, 1),
+    opacity 0.32s ease,
+    filter 0.34s ease,
+    visibility 0.34s ease,
+    background-color 0.24s ease,
+    border-color 0.24s ease,
+    box-shadow 0.24s ease;
+  animation: im-pod-in 0.55s cubic-bezier(0.2, 1.25, 0.35, 1) backwards;
+}
+
+@keyframes im-pod-in {
+  from {
+    opacity: 0;
+    scale: 0.9;
+    translate: 0 24px;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
+}
+
+/* popup 关闭态（!open 时由组件挂 pointer-events-none + invisible） */
+.im-pod.invisible {
+  opacity: 0;
+  filter: blur(5px);
+  scale: 0.7;
+  translate: 0 30px;
+}
+
+/* 独立窗关闭态（组件延迟卸载期间挂 .im-pod--closing） */
+.im-pod--closing {
+  opacity: 0;
+  filter: blur(5px);
+  scale: 0.7;
+  translate: 0 30px;
+  pointer-events: none;
+}
+
+/* 侧栏：宽度弹性展开 + 关闭滑出模糊（覆盖旧 duration-200 ease-out 工具类） */
+aside[data-im-messages-panel].im-pod {
+  /* 侧栏常驻在文档流里，不要播「从下方浮上来」的入场，否则会跟着页面滚上去 */
+  animation: none;
+  transition:
+    width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    scale 0.5s cubic-bezier(0.2, 1.25, 0.35, 1),
+    translate 0.45s cubic-bezier(0.2, 1.25, 0.35, 1),
+    opacity 0.32s ease,
+    filter 0.34s ease,
+    visibility 0.34s ease,
+    background-color 0.24s ease,
+    border-color 0.24s ease,
+    box-shadow 0.24s ease;
+}
+aside[data-im-messages-panel].im-pod[data-state='closed'] {
+  opacity: 0;
+  filter: blur(4px);
+  scale: 0.96;
+  translate: 24px 0;
+}
+
+/* 侧栏拖拽调宽时关闭过渡，保证拖动跟手 */
+.im-pod--no-anim {
+  transition: none !important;
+}
+
+/* ------------------------------------------------------------
+   2. 顶部流光条：缓慢平移的青色微光带
+   ------------------------------------------------------------ */
+.im-pod::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  z-index: 45;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in oklab, var(--hud) 14%, transparent) 47%,
+    color-mix(in oklab, var(--hud) 5%, transparent) 54%,
+    transparent 70%
+  );
+  transform: translateX(-140%);
+  animation: im-sheen 10s ease-in-out infinite;
+}
+
+@keyframes im-sheen {
+  0% {
+    transform: translateX(-140%);
+  }
+  40%,
+  100% {
+    transform: translateX(140%);
+  }
+}
+
+/* ------------------------------------------------------------
+   3. 舱窗点（红黄绿纯展示 span）+ COMMS mono 装饰标签
+   ------------------------------------------------------------ */
+.im-pod__head {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding-inline-start: 14px;
+  border-bottom: 1px solid var(--divider);
+  background: color-mix(in oklab, var(--surface) 72%, transparent);
+}
+
+.im-pod__dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.im-pod__dots i {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.im-pod__dots i:nth-child(1) {
+  background: var(--destructive);
+}
+
+.im-pod__dots i:nth-child(2) {
+  background: var(--warning);
+}
+
+.im-pod__dots i:nth-child(3) {
+  background: var(--success);
+}
+
+.im-pod__label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hud);
+  white-space: nowrap;
+}
+
+/* popup / 独立窗的拖拽条：功能红绿灯位于 start-4，标签避让至其后 */
+.im-pod__drag {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-inline-start: 76px;
+}
+
+/* ------------------------------------------------------------
+   4. 消息气泡弹性入场：them 锚左下 / me 锚右下
+   ------------------------------------------------------------ */
+.im-msg-row {
+  animation: im-msg-in 0.5s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+.im-msg-row--them {
+  transform-origin: bottom left;
+}
+
+.im-msg-row--me {
+  transform-origin: bottom right;
+}
+
+@keyframes im-msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------
+   5. 「对方正在输入」气泡 + 三点错峰跳动
+   ------------------------------------------------------------ */
+.im-typing {
+  align-self: flex-start;
+  margin-top: 12px;
+  margin-left: 2.85rem;
+  animation: im-typing-in 0.34s var(--ease-out-expo) both;
+}
+
+.im-typing__dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 11px 15px;
+  border-radius: 16px;
+  border-bottom-left-radius: 5px;
+  background: color-mix(in oklab, var(--surface-secondary) 92%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.im-typing__dots i {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted-foreground);
+  animation: im-dot 1s ease-in-out infinite;
+}
+
+.im-typing__dots i:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.im-typing__dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.im-typing__dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes im-typing-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes im-dot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------
+   6. 会话切换：消息列表滑入转场（key 切换触发重挂载）
+   ------------------------------------------------------------ */
+.im-msg-list {
+  animation: im-swap-in 0.3s cubic-bezier(0.2, 1.1, 0.3, 1) backwards;
+}
+
+@keyframes im-swap-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------
+   7. 输入区呼吸：聚焦上浮 2px + 青色描边辉光；发送键就绪辉光
+   ------------------------------------------------------------ */
+.im-composer {
+  transition:
+    transform 0.3s var(--ease-out-expo),
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.im-composer:focus-within {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--hud) 42%, transparent),
+    0 8px 22px color-mix(in oklab, var(--hud) 14%, transparent);
+}
+
+.im-send-btn:not(:disabled) {
+  animation: im-ready-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes im-ready-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--hud) 42%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in oklab, var(--hud) 0%, transparent);
+  }
+}
+
+/* ------------------------------------------------------------
+   9. iOS 26 聊天弹窗（.im-pod--ios）
+   ------------------------------------------------------------
+   聊天不再是右侧常驻侧边栏，而是居中弹出的玻璃弹窗（demo 基准）。
+   因此把 NEBULA 的「对话舱」外观收掉：
+     · ::before 顶部流光条  → 取消
+     · 青色描边/辉光        → 交给 .a-glass 的内描边与阴影
+     · 红绿灯 + COMMS 拖拽条 → 换成 iOS 标题栏 .im-ios-head
+   ------------------------------------------------------------ */
+.im-pod--ios {
+  border-radius: 16px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: var(--shadow-xl);
+}
+.im-pod--ios::before {
+  /* 顶部流光条是 NEBULA 遗留装饰，与 iOS 26 的克制方向冲突 */
+  content: none;
+}
+
+.im-ios-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: none;
+  height: 56px;
+  padding: 0 10px 0 20px;
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+  border-bottom: 1px solid var(--glass-border);
+}
+.im-ios-head__text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+.im-ios-head__title {
+  font: 600 15px/1.25 var(--font-sans);
+  letter-spacing: -0.012em;
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.im-ios-head__sub {
+  font: 400 12px/1.3 var(--font-sans);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.im-ios-head button {
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------
+   8. 降低动效：本文件范围兜底（全局已有 * 降级，此处显式声明）
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .im-pod,
+  .im-msg-row,
+  .im-msg-list,
+  .im-typing,
+  .im-typing__dots i,
+  .im-pod::before,
+  .im-send-btn:not(:disabled) {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .im-pod,
+  aside[data-im-messages-panel].im-pod {
+    transition-duration: 0.01ms !important;
+  }
+  .im-composer,
+  .im-composer:focus-within {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ============================================================
+   10. iOS 26 对话体系
+   ------------------------------------------------------------
+   基准：demo _shots/20-chat.png、24-dnd.png。
+
+   布局（左→右）：导航轨 52 → 会话列表 → 消息面板（会话头 / 消息流 / 输入区）。
+   材质：整个窗口是一块玻璃（.a-glass + 本文件的 .im-pod--ios），
+        内部各栏只用「比玻璃再淡一点的色块」分层，不再叠第二层玻璃，
+        否则 backdrops 互相采样会糊成一片。
+   所有颜色走 token；所有动效只碰 transform / opacity 派生属性。
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   10.1 窗口：从右上角触发点「长」出来的开合
+   （transform-origin 贴近顶栏对话按钮；关闭态缩回同一点）
+   ------------------------------------------------------------ */
+.im-pod--ios {
+  transform-origin: calc(100% - 30px) 4px;
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: var(--shadow-xl);
+  /* 首次挂载（forceMount 前的 mount 路径）也要「长出来」，
+     之后的开合走下面的 transition。 */
+  animation: im-pod-ios-in var(--motion-panel) var(--ease-ios) backwards;
+  transition:
+    scale var(--motion-panel) var(--ease-ios),
+    translate var(--motion-panel) var(--ease-ios),
+    opacity 300ms var(--ease-glide),
+    filter 360ms var(--ease-glide),
+    visibility 300ms linear,
+    background-color 240ms ease,
+    box-shadow 240ms ease;
+}
+
+@keyframes im-pod-ios-in {
+  from {
+    opacity: 0;
+    scale: 0.72;
+    translate: 40px -26px;
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+    filter: blur(0);
+  }
+}
+
+.im-pod--ios.invisible {
+  opacity: 0;
+  scale: 0.72;
+  translate: 40px -26px;
+  filter: blur(8px);
+}
+
+/* 窗口内不做任何第二层 backdrop-filter（除输入区的软内阴影外） */
+.im-pod--ios .im-ios-head,
+.im-pod--ios .im-rail,
+.im-pod--ios .im-conv,
+.im-pod--ios .im-chat__bar,
+.im-pod--ios .im-composer {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/*
+  ⚠️ `.im-scrim` 已删除。
+  聊天弹窗改成了**真正的独立浮窗**（点外部不关闭），不再需要模态压暗层。
+  保留这段定义只会变成死 CSS —— 而且容易让人以为弹窗还有遮罩。
+*/
+
+/* ------------------------------------------------------------
+   10.2 窗口标题栏（仅窗户 chrome：拖拽 + 最大化 / 关闭）
+   ------------------------------------------------------------ */
+.im-ios-head {
+  height: 46px;
+  gap: 8px;
+  padding: 0 8px 0 12px;
+  cursor: move;
+  border-bottom: 1px solid var(--divider);
+  background: color-mix(in oklab, var(--surface) 34%, transparent);
+}
+
+.im-ios-head__grip {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.im-ios-head__text {
+  gap: 0;
+}
+
+.im-ios-head__title {
+  font: 600 13px/1.3 var(--font-sans);
+  letter-spacing: -0.012em;
+}
+
+.im-ios-head__sub {
+  font: 400 11px/1.35 var(--font-sans);
+  color: var(--text-muted);
+}
+
+.im-ios-head__btn {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: transparent;
+  transition:
+    background-color 160ms var(--ease-glide),
+    color 160ms var(--ease-glide),
+    scale 160ms var(--ease-ios);
+}
+
+.im-ios-head__btn:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+.im-ios-head__btn:active {
+  scale: 0.92;
+}
+
+/* ------------------------------------------------------------
+   10.3 通用圆角图标按钮（会话头 / 输入区 / 行内操作）
+   ------------------------------------------------------------ */
+.im-iconbtn {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: transparent;
+  transition:
+    background-color 160ms var(--ease-glide),
+    color 160ms var(--ease-glide),
+    scale 160ms var(--ease-ios);
+}
+
+.im-iconbtn:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+.im-iconbtn:active {
+  scale: 0.92;
+}
+
+.im-iconbtn--accent {
+  color: var(--primary);
+  background: var(--accent-soft);
+}
+
+/* ------------------------------------------------------------
+   10.4 导航轨（最左侧 52px）
+   ------------------------------------------------------------ */
+.im-rail {
+  display: flex;
+  width: 52px;
+  flex: none;
+  flex-direction: column;
+  border-right: 1px solid var(--divider);
+  background: color-mix(in oklab, var(--surface-secondary) 55%, transparent);
+}
+
+.im-rail__top {
+  display: flex;
+  flex: none;
+  justify-content: center;
+  padding: 10px 0 8px;
+}
+
+.im-rail__stack {
+  flex: 1;
+  min-height: 0;
+}
+
+.im-rail__foot {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0 12px;
+}
+
+.im-rail__sep {
+  width: 22px;
+  height: 1px;
+  margin: 2px 0 6px;
+  background: var(--divider);
+}
+
+.im-rail__btn {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 11px;
+  color: var(--text-muted);
+  background: transparent;
+  transition:
+    background-color 160ms var(--ease-glide),
+    color 160ms var(--ease-glide),
+    scale 160ms var(--ease-ios);
+}
+
+.im-rail__btn:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+.im-rail__btn:active {
+  scale: 0.93;
+}
+
+.im-rail__btn[data-on='true'] {
+  color: var(--primary);
+  background: var(--accent-soft);
+}
+
+/* ------------------------------------------------------------
+   10.5 会话列表
+   ------------------------------------------------------------ */
+.im-conv {
+  display: flex;
+  height: 100%;
+  flex: none;
+  flex-direction: column;
+  border-right: 1px solid var(--divider);
+  background: color-mix(in oklab, var(--surface-secondary) 42%, transparent);
+}
+
+.im-conv__head {
+  flex: none;
+  padding: 10px 10px 8px;
+}
+
+.im-conv__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.im-conv__search > svg {
+  position: absolute;
+  left: 10px;
+  width: 13px;
+  height: 13px;
+  pointer-events: none;
+  color: var(--text-muted);
+}
+
+.im-conv__input {
+  height: 32px;
+  width: 100%;
+  padding: 0 10px 0 28px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--surface) 72%, transparent);
+  font: 400 13px/1 var(--font-sans);
+  color: var(--foreground);
+  box-shadow: none;
+  transition:
+    background-color 180ms var(--ease-glide),
+    border-color 180ms var(--ease-glide),
+    box-shadow 180ms var(--ease-glide);
+}
+
+.im-conv__input::placeholder {
+  color: var(--text-muted);
+}
+
+.im-conv__input:focus,
+.im-conv__input:focus-visible {
+  outline: none;
+  background: var(--surface);
+  border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.im-conv__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 8px 12px;
+}
+
+.im-conv__row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  text-align: left;
+  transition:
+    background-color 160ms var(--ease-glide),
+    box-shadow 200ms var(--ease-glide),
+    scale 160ms var(--ease-ios);
+}
+
+.im-conv__row:hover {
+  background: var(--surface-hover);
+}
+
+.im-conv__row:active {
+  scale: 0.985;
+}
+
+.im-conv__row.is-active {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 20%, transparent);
+}
+
+.im-conv__row.is-drop {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--primary) 55%, transparent);
+}
+
+.im-conv__avatar {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  place-items: center;
+  border-radius: 13px;
+  font: 600 13px/1 var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+.im-conv__name {
+  font: 600 13.5px/1.3 var(--font-sans);
+  letter-spacing: -0.012em;
+  color: var(--foreground);
+}
+
+.im-conv__last {
+  font: 400 12.5px/1.35 var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.im-conv__last.is-unread {
+  color: var(--foreground);
+}
+
+.im-conv__last.is-drop {
+  color: var(--primary);
+}
+
+.im-conv__time {
+  flex: none;
+  font: 500 10.5px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.im-conv__badge {
+  display: grid;
+  height: 18px;
+  min-width: 18px;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 999px;
+  font: 600 10.5px/1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--destructive-foreground);
+  background: var(--destructive);
+}
+
+.im-conv__badge.is-muted {
+  color: var(--text-secondary);
+  background: var(--surface-3);
+}
+
+.im-conv__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------
+   10.6 消息面板：会话头
+   ------------------------------------------------------------ */
+.im-chat {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  background: transparent;
+}
+
+.im-chat__bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--divider);
+  background: color-mix(in oklab, var(--surface) 30%, transparent);
+}
+
+.im-chat__avatar {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  place-items: center;
+  border: 0;
+  border-radius: 11px;
+  font: 600 12.5px/1 var(--font-sans);
+  transition:
+    box-shadow 180ms var(--ease-glide),
+    scale 160ms var(--ease-ios);
+}
+
+.im-chat__avatar:active {
+  scale: 0.94;
+}
+
+.im-chat__avatar:hover {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 20%, transparent);
+}
+
+.im-chat__avatar-media {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+}
+
+.im-chat__avatar-media img,
+.im-chat__avatar-media span {
+  border-radius: 11px;
+}
+
+.im-chat__emptyglyph {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 15px;
+  color: var(--text-muted);
+  background: color-mix(in oklab, var(--surface-3) 70%, transparent);
+}
+
+.im-chat__name {
+  font: 600 14.5px/1.25 var(--font-sans);
+  letter-spacing: -0.016em;
+  color: var(--foreground);
+}
+
+.im-chat__sub {
+  font: 400 11.5px/1.35 var(--font-sans);
+  color: var(--text-muted);
+}
+
+.im-chat__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.im-chat__dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+/* ------------------------------------------------------------
+   10.7 消息流
+   ------------------------------------------------------------ */
+.im-stream {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  background: transparent;
+}
+
+.im-stream__inner {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 14px 6px;
+}
+
+.im-daysep {
+  align-self: center;
+  margin: 8px 0 12px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--surface-3) 72%, transparent);
+  font: 500 11px/1.2 var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+}
+
+.im-msg-time {
+  display: block;
+  padding: 0 4px;
+  font: 400 10.5px/1.3 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.im-msg-avatar {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 10px;
+}
+
+.im-msg-avatar__img {
+  border-radius: 10px;
+}
+
+.im-msg-avatar-gap {
+  display: block;
+  width: 30px;
+  height: 30px;
+  flex: none;
+}
+
+.im-recalled {
+  align-self: center;
+  cursor: default;
+  text-align: center;
+  font: 400 11px/1.4 var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.im-msg-read {
+  flex: none;
+  padding-bottom: 4px;
+  font: 400 10.5px/1 var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* 气泡：自己 = 系统蓝渐变 + 白字；对方 = 分组底 second surface */
+.im-bubble {
+  max-width: min(78vw, 30rem);
+  min-width: 0;
+  padding: 9px 13px;
+  border-radius: 19px;
+  font: 400 13.5px/1.55 var(--font-sans);
+  letter-spacing: -0.006em;
+  word-break: break-word;
+  transition:
+    box-shadow 200ms var(--ease-glide),
+    scale 200ms var(--ease-ios);
+}
+
+.im-bubble--them {
+  color: var(--foreground);
+  background: var(--surface-secondary);
+  border-bottom-left-radius: 6px;
+  box-shadow: var(--shadow-2xs);
+}
+
+.im-bubble--me {
+  color: var(--primary-foreground);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--primary) 84%, var(--primary-foreground)),
+    var(--primary)
+  );
+  border-bottom-right-radius: 6px;
+  box-shadow: 0 8px 20px -12px color-mix(in oklab, var(--primary) 85%, transparent);
+}
+
+.im-bubble--file {
+  width: 236px;
+  max-width: 100%;
+  padding: 8px;
+}
+
+.im-bubble--image {
+  padding: 4px;
+  overflow: hidden;
+}
+
+.im-bubble--broken {
+  color: var(--text-muted);
+  background: color-mix(in oklab, var(--surface-3) 80%, transparent);
+}
+
+.im-bubble--recalled {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* 引用块 */
+.im-quote {
+  margin-bottom: 6px;
+  padding: 6px 9px;
+  border-left: 2px solid color-mix(in oklab, var(--primary) 55%, transparent);
+  border-radius: 3px 9px 9px 3px;
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
+  font: 400 11.5px/1.45 var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.im-bubble--me .im-quote {
+  border-left-color: color-mix(in oklab, var(--primary-foreground) 60%, transparent);
+  background: color-mix(in oklab, var(--primary-foreground) 18%, transparent);
+  color: color-mix(in oklab, var(--primary-foreground) 90%, transparent);
+}
+
+/* 文件 / 图片气泡内容 */
+.im-file {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.im-file__icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  place-items: center;
+  border-radius: 11px;
+  background: color-mix(in oklab, var(--surface) 90%, transparent);
+}
+
+.im-bubble--me .im-file__icon {
+  background: color-mix(in oklab, var(--primary-foreground) 22%, transparent);
+}
+
+.im-file__name {
+  display: block;
+  overflow: hidden;
+  font: 550 12.5px/1.35 var(--font-sans);
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+}
+
+.im-file__meta {
+  display: block;
+  font: 400 10.5px/1.4 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.im-bubble--me .im-file__meta {
+  color: color-mix(in oklab, var(--primary-foreground) 76%, transparent);
+}
+
+.im-file__hint {
+  display: block;
+  font: 400 10.5px/1.4 var(--font-sans);
+  color: var(--text-muted);
+}
+
+.im-download {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: color-mix(in oklab, var(--surface) 80%, transparent);
+  transition:
+    background-color 160ms var(--ease-glide),
+    color 160ms var(--ease-glide),
+    scale 160ms var(--ease-ios);
+}
+
+.im-download:hover {
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.im-download:active {
+  scale: 0.92;
+}
+
+.im-bubble--me .im-download {
+  border-color: color-mix(in oklab, var(--primary-foreground) 30%, transparent);
+  background: color-mix(in oklab, var(--primary-foreground) 18%, transparent);
+  color: var(--primary-foreground);
+}
+
+/* ------------------------------------------------------------
+   10.8 输入区
+   ------------------------------------------------------------ */
+.im-composer {
+  flex: none;
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--divider);
+  background: color-mix(in oklab, var(--surface) 26%, transparent);
+}
+
+/* 旧的聚焦上浮 + 呼吸辉光在 iOS 语言里太吵，收掉 */
+.im-composer:focus-within {
+  transform: none;
+  box-shadow: none;
+}
+
+.im-send-btn:not(:disabled) {
+  animation: none;
+}
+
+.im-composer__pill {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 5px 6px 5px 8px;
+  border: 1px solid transparent;
+  border-radius: 24px;
+  background: color-mix(in oklab, var(--surface-secondary) 92%, transparent);
+  transform-origin: center bottom;
+  transition:
+    background-color 200ms var(--ease-glide),
+    border-color 200ms var(--ease-glide),
+    box-shadow 240ms var(--ease-glide),
+    scale 260ms var(--ease-ios);
+}
+
+.im-composer__pill:focus-within {
+  background: var(--surface);
+  border-color: color-mix(in oklab, var(--primary) 42%, transparent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  scale: 1.008;
+}
+
+.im-composer__field {
+  display: block;
+  min-width: 0;
+  min-height: 34px;
+  max-height: 104px;
+  flex: 1;
+  padding: 8px 6px;
+  border: 0;
+  background: transparent;
+  font: 400 13.5px/1.5 var(--font-sans);
+  color: var(--foreground);
+  outline: none;
+  resize: none;
+  box-shadow: none;
+}
+
+.im-composer__field::placeholder {
+  color: var(--text-muted);
+}
+
+.im-composer__field:focus,
+.im-composer__field:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.im-send-btn {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: var(--primary-foreground);
+  background: var(--primary);
+  box-shadow: 0 8px 18px -10px color-mix(in oklab, var(--primary) 85%, transparent);
+  transition:
+    scale 200ms var(--ease-spring),
+    opacity 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.im-send-btn:disabled {
+  opacity: 0.32;
+  box-shadow: none;
+}
+
+.im-send-btn:not(:disabled):active {
+  scale: 0.9;
+}
+
+/* 引用条（输入区上方） */
+.im-quotebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 7px 10px;
+  border-left: 2px solid var(--primary);
+  border-radius: 3px 11px 11px 3px;
+  background: var(--accent-soft);
+}
+
+/* ------------------------------------------------------------
+   10.9 待上传行
+   ------------------------------------------------------------ */
+.im-pending {
+  width: 236px;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px dashed color-mix(in oklab, var(--primary) 45%, transparent);
+  border-radius: 19px 19px 6px 19px;
+  background: color-mix(in oklab, var(--accent-soft) 70%, transparent);
+}
+
+/* ------------------------------------------------------------
+   10.10 联系人面板
+   ------------------------------------------------------------ */
+.im-contacts {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  background: transparent;
+}
+
+.im-contacts__search {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.im-contacts__row {
+  border-bottom: 1px solid var(--divider);
+}
+
+.im-contacts__row:last-child {
+  border-bottom: 0;
+}
+
+.im-contacts__avatar {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  place-items: center;
+  border-radius: 11px;
+  font: 600 12px/1 var(--font-sans);
+}
+
+.im-presence {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+}
+
+.im-presence__dot {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  z-index: 1;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px var(--background);
+}
+
+.im-presence__dot.is-on {
+  background: var(--success);
+}
+
+.im-presence__dot.is-off {
+  background: #9ca3af;
+}
+
+.im-contacts__role {
+  border-radius: 999px;
+  padding: 2px 8px;
+  font: 500 10px/1.4 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--primary);
+  background: var(--accent-soft);
+}
+
+/* 分组小标题 */
+.im-sect {
+  padding: 10px 12px 6px;
+  font: 500 10.5px/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------
+   10.11 表情选择器
+   ------------------------------------------------------------ */
+.im-emoji {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+}
+
+.im-emoji__key {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-size: 17px;
+  line-height: 1;
+  transition:
+    background-color 140ms var(--ease-glide),
+    scale 140ms var(--ease-ios);
+}
+
+.im-emoji__key:hover {
+  background: var(--surface-hover);
+}
+
+.im-emoji__key:active {
+  scale: 0.88;
+}
+
+/* ------------------------------------------------------------
+   10.12 分离窗（独立聊天窗口）
+   ------------------------------------------------------------ */
+.im-pod--detached {
+  border-radius: 22px;
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-xl), var(--glass-inset);
+}
+
+.im-pod--detached .im-pod__drag {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding-inline-start: 12px;
+  border-bottom: 1px solid var(--divider);
+  background: color-mix(in oklab, var(--surface) 34%, transparent);
+}
+
+/* 「对方正在输入」气泡：跟随消息流的对方气泡语言 */
+.im-typing {
+  align-self: flex-start;
+  margin-top: 10px;
+  margin-left: 2.4rem;
+}
+
+.im-typing__dots {
+  border: 0;
+  border-radius: 19px 19px 19px 6px;
+  background: var(--surface-secondary);
+  box-shadow: var(--shadow-2xs);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.im-typing__dots i {
+  background: var(--text-muted);
+}
+
+/* ------------------------------------------------------------
+   10.13 降低动效兜底（新增部分）
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .im-pod--ios,
+  .im-conv__row,
+  .im-bubble,
+  .im-composer__pill,
+  .im-send-btn,
+  .im-iconbtn,
+  .im-ios-head__btn,
+  .im-rail__btn {
+    transition-duration: 0.01ms !important;
+  }
+  .im-pod--ios {
+    animation: none !important;
+  }
+  .im-composer__pill:focus-within,
+  .im-pod--ios.invisible {
+    scale: 1;
+    translate: 0 0;
+  }
+}
+
+/* ============================================================
+   11. 聊天壳 v2 —— shadcn 中性（覆盖上面所有 iOS / 玻璃遗留）
+   ------------------------------------------------------------
+   · 无 backdrop-filter / 无 blur 渐隐 / 无流光条
+   · 实色 card + 细边 + 阴影；标题栏朴素
+   · 开合：从右下角气泡"长出来"（origin = bottom right，scale + translate，
+     弹簧曲线），关闭缩回同一点
+   · 气泡本体：按下回弹；有未读时轻轻呼吸
+   ============================================================ */
+.im-pod,
+.im-pod--ios,
+.im-pod--detached,
+.im-pod--panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.im-pod::before,
+.im-pod--ios::before {
+  content: none;
+}
+.im-pod--ios {
+  transform-origin: bottom right;
+}
+.im-pod.invisible,
+.im-pod--closing {
+  opacity: 0;
+  filter: none;
+  scale: 0.9;
+  translate: 0 18px;
+}
+aside[data-im-messages-panel].im-pod--panel {
+  transform-origin: right center;
+}
+aside[data-im-messages-panel].im-pod[data-state='closed'] {
+  opacity: 0;
+  filter: none;
+  scale: 0.98;
+  translate: 28px 0;
+  border-width: 0;
+  margin-inline-end: 0;
+}
+.im-ios-head {
+  height: 48px;
+  padding: 0 10px 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--card) 88%, var(--surface-secondary));
+}
+.im-ios-head__text {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  padding-right: 8px;
+}
+.im-ios-head__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+.im-ios-seg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+.im-ios-seg button,
+.im-ios-seg__switch {
+  pointer-events: auto;
+}
+.im-ios-seg__switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.im-ios-seg__thumb {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  z-index: 0;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--surface-hover);
+  pointer-events: none;
+  transition:
+    transform 240ms var(--ease-ios),
+    width 240ms var(--ease-ios);
+}
+.im-ios-seg__switch button {
+  position: relative;
+  z-index: 1;
+}
+.im-ios-seg button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font: 500 12px/1 var(--font-sans);
+  cursor: pointer;
+}
+.im-ios-seg button svg {
+  width: 13px;
+  height: 13px;
+}
+.im-ios-seg button[data-on] {
+  background: transparent;
+  color: var(--foreground);
+}
+.im-pane {
+  animation: im-pane-in 240ms var(--ease-ios);
+}
+.im-pane.is-contacts {
+  animation-name: im-pane-in-back;
+}
+@keyframes im-pane-in {
+  from {
+    opacity: 0;
+    translate: 16px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes im-pane-in-back {
+  from {
+    opacity: 0;
+    translate: -16px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+.im-ios-seg button:hover {
+  color: var(--foreground);
+}
+.im-bubble--me {
+  background: var(--primary);
+  box-shadow: none;
+}
+
+.im-bubble-launcher {
+  transform-origin: center;
+  transition:
+    scale var(--motion-panel) var(--ease-spring),
+    opacity var(--motion-normal) var(--ease-out-expo),
+    background-color var(--motion-fast) var(--ease-out-expo),
+    box-shadow var(--motion-normal) var(--ease-out-expo);
+  animation: im-launcher-in var(--motion-panel) var(--ease-spring) backwards;
+}
+.im-bubble-launcher:hover {
+  scale: 1.06;
+  box-shadow: var(--shadow-xl);
+}
+.im-bubble-launcher:active {
+  scale: 0.92;
+}
+.im-bubble-launcher[data-state='hidden'] {
+  scale: 0.4;
+  opacity: 0;
+  pointer-events: none;
+}
+.im-bubble-launcher--unread {
+  animation:
+    im-launcher-in var(--motion-panel) var(--ease-spring) backwards,
+    im-launcher-breathe 2.6s var(--ease-out-expo) 0.6s infinite;
+}
+@keyframes im-launcher-in {
+  from {
+    opacity: 0;
+    scale: 0.5;
+    translate: 0 10px;
+  }
+}
+@keyframes im-launcher-breathe {
+  0%,
+  100% {
+    box-shadow: var(--shadow-lg), 0 0 0 0 color-mix(in oklab, var(--foreground) 22%, transparent);
+  }
+  60% {
+    box-shadow: var(--shadow-lg), 0 0 0 10px color-mix(in oklab, var(--foreground) 0%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .im-bubble-launcher,
+  .im-bubble-launcher--unread {
+    animation: none;
+    transition-duration: 0.01ms;
+  }
+}

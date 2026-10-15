@@ -1,0 +1,52 @@
+/*
+ * Alder — derivative of Free-FS (https://github.com/dromara/free-fs).
+ * Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
+ *
+ * 存储页局部样式（只在本页生效，颜色全部走 token）。
+ * hero 卡的环形占比中心文案；位移一律走 translate（transform 留给入场动画）。
+ * 末尾带 prefers-reduced-motion 兜底。
+ */
+.a-ring__label {
+  font: 700 17px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  fill: var(--foreground);
+}
+
+/*
+ * hero 卡里图例用两列栅格；.a-legend--grid 默认 min-width 250px 在窄容器里
+ * 会把「已启用 2」和「已停用 0」拉得过开，这里按本页宽度收紧。
+ */
+/*
+ * hero 卡里图例改成「按内容排布」的两列：每列各自收缩，
+ * 不再被 .a-legend--grid 的 1fr 1fr 拉满整个宽度。
+ */
+.a-storage-row .a-legend--grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  margin-top: 0;
+  min-width: 0;
+  flex: 0 1 auto;
+  gap: 10px 26px;
+}
+.a-storage-row .a-legend div {
+  justify-content: flex-start;
+}
+.a-storage-row .a-legend b {
+  margin-left: 8px;
+}
+
+/* 窄屏：环形与图例换行，不要挤成一列 */
+@media (max-width: 720px) {
+  .a-storage-row {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .a-ring .a-ring__value {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,46 @@
+# 复制为 application-prod.yml 后再改生产值。application-prod.yml 不入库。
+knife4j:
+  production: true
+
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://127.0.0.1:5432/free-fs?reWriteBatchedInserts=true
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connectionTimeout: 30000
+      validationTimeout: 5000
+      idleTimeout: 600000
+      maxLifetime: 1800000
+      connectionTestQuery: SELECT 1
+      keepaliveTime: 30000
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 0
+      timeout: 10s
+      lettuce:
+        pool:
+          max-active: 200
+          max-wait: -1ms
+          max-idle: 10
+          min-idle: 0
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+      cache-null-values: true
+
+fs:
+  frontend:
+    domain: ${FS_FRONTEND_DOMAIN:https://example.com}
+  storage:
+    local:
+      base-path: /var/alder/uploads
+      base-url: https://example.com/files

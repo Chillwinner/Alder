@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.meeting.mapper.WorkspaceMeetingMapper">
+
+    <insert id="insertMeeting">
+        INSERT INTO workspace_meeting
+            (id, workspace_id, room_id, title, starts_at, created_by, status, created_at)
+        VALUES
+            (#{id}, #{workspaceId}, #{roomId}, #{title}, #{startsAt}, #{createdBy}, 'SCHEDULED', NOW())
+    </insert>
+
+    <insert id="insertParticipants">
+        INSERT INTO workspace_meeting_participant (meeting_id, user_id)
+        VALUES
+        <foreach collection="userIds" item="userId" separator=",">
+            (#{meetingId}, #{userId})
+        </foreach>
+    </insert>
+
+    <select id="selectByWorkspace" resultType="com.xddcodec.fs.meeting.domain.WorkspaceMeetingRow">
+        SELECT m.id,
+               m.workspace_id,
+               w.name AS workspace_name,
+               w.slug AS workspace_slug,
+               m.room_id,
+               m.title,
+               m.starts_at,
+               m.status,
+               m.created_by,
+               COALESCE(NULLIF(u.nickname, ''), u.username) AS creator_name,
+               m.created_at
+        FROM workspace_meeting m
+                 LEFT JOIN sys_workspace w ON w.id = m.workspace_id
+                 LEFT JOIN sys_user u ON u.id = m.created_by
+        WHERE m.workspace_id = #{workspaceId}
+        ORDER BY m.starts_at DESC
+    </select>
+
+    <select id="selectParticipantIds" resultType="java.lang.String">
+        SELECT user_id
+        FROM workspace_meeting_participant
+        WHERE meeting_id = #{meetingId}
+    </select>
+
+    <select id="selectUpcomingForUser" resultType="com.xddcodec.fs.meeting.domain.WorkspaceMeetingRow">
+        SELECT m.id,
+               m.workspace_id,
+               w.name AS workspace_name,
+               w.slug AS workspace_slug,
+               m.room_id,
+               m.title,
+               m.starts_at,
+               m.status,
+               m.created_by,
+               COALESCE(NULLIF(u.nickname, ''), u.username) AS creator_name,
+               m.pre15_pushed_at,
+               m.created_at
+        FROM workspace_meeting_participant p
+                 JOIN workspace_meeting m ON m.id = p.meeting_id
+                 JOIN sys_workspace w ON w.id = m.workspace_id
+                 LEFT JOIN sys_user u ON u.id = m.created_by
+        WHERE p.user_id = #{userId}
+          AND m.status &lt;&gt; 'CLOSED'
+        ORDER BY m.starts_at ASC
+    </select>
+
+    <select id="selectById" resultType="com.xddcodec.fs.meeting.domain.WorkspaceMeetingRow">
+        SELECT m.id,
+               m.workspace_id,
+               w.name AS workspace_name,
+               w.slug AS workspace_slug,
+               m.room_id,
+               m.title,
+               m.starts_at,
+               m.status,
+               m.created_by,
+               COALESCE(NULLIF(u.nickname, ''), u.username) AS creator_name,
+               m.invite_pushed_at,
+               m.pre15_pushed_at,
+               m.created_at
+        FROM workspace_meeting m
+                 LEFT JOIN sys_workspace w ON w.id = m.workspace_id
+                 LEFT JOIN sys_user u ON u.id = m.created_by
+        WHERE m.id = #{id}
+    </select>
+
+    <select id="selectByRoomId" resultType="com.xddcodec.fs.meeting.domain.WorkspaceMeetingRow">
+        SELECT id, workspace_id, room_id, title, starts_at, created_by, status
+        FROM workspace_meeting
+        WHERE room_id = #{roomId}
+    </select>
+
+    <select id="countParticipant" resultType="int">
+        SELECT COUNT(*)
+        FROM workspace_meeting_participant
+        WHERE meeting_id = #{meetingId}
+          AND user_id = #{userId}
+    </select>
+
+    <update id="markInvitePushed">
+        UPDATE workspace_meeting
+        SET invite_pushed_at = NOW()
+        WHERE id = #{id}
+          AND invite_pushed_at IS NULL
+    </update>
+
+    <update id="markPre15Pushed">
+        UPDATE workspace_meeting
+        SET pre15_pushed_at = NOW()
+        WHERE id = #{id}
+          AND pre15_pushed_at IS NULL
+    </update>
+
+    <update id="markOpened">
+        UPDATE workspace_meeting
+        SET status = 'OPEN'
+        WHERE id = #{id}
+          AND status = 'SCHEDULED'
+    </update>
+
+    <update id="markClosed">
+        UPDATE workspace_meeting
+        SET status = 'CLOSED',
+            closed_at = NOW()
+        WHERE id = #{id}
+          AND created_by = #{userId}
+          AND status = 'OPEN'
+    </update>
+
+    <select id="selectDuePre15" resultType="com.xddcodec.fs.meeting.domain.WorkspaceMeetingRow">
+        SELECT id, workspace_id, room_id, title, starts_at, created_by, status
+        FROM workspace_meeting
+        WHERE status = 'SCHEDULED'
+          AND starts_at &lt;= NOW() + INTERVAL '15 minutes'
+    </select>
+</mapper>

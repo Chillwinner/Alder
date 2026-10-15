@@ -1,0 +1,101 @@
+{
+  "loading": "Loading…",
+  "workspaceListError": "Could not load workspaces",
+  "refreshOrRelogin": "Refresh the page or sign in again",
+  "workspaceLoadError": "Failed to load workspace. Please try again.",
+  "retry": "Retry",
+  "backHome": "Back to home",
+  "close": "Close",
+  "cancel": "Cancel",
+  "notFound": {
+    "title": "Sorry, this page does not exist",
+    "back": "Back to home"
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Profile page"
+  },
+  "api": {
+    "loginFailed": "Sign-in failed",
+    "noPermission": "No permission",
+    "operationFailed": "Operation failed",
+    "networkFailed": "Request failed",
+    "badRequest": "Invalid request",
+    "wrongCredentials": "Invalid account or password",
+    "notFound": "Resource not found",
+    "serverError": "Server error",
+    "requestFailed": "Request failed ({{status}})",
+    "timeout": "Request timed out. Check your network.",
+    "networkError": "Network error. Check your connection."
+  },
+  "listTotalItems": "{{count}} items",
+  "searchShortcut": "Search or run a command…",
+  "commandMenu": {
+    "title": "Command palette",
+    "placeholderAll": "Search files, jump, or run a command…",
+    "placeholderScoped": "Type keywords to search this type…",
+    "clear": "Clear",
+    "closeAria": "Close",
+    "empty": "No matching commands",
+    "searchHeading": "Search",
+    "searchFiles": "Search files for “{{query}}”",
+    "typeHeading": "File type (optional)",
+    "goHeading": "Go to",
+    "actionHeading": "Actions",
+    "settingsHeading": "Settings",
+    "openMessages": "Open messages",
+    "toggleTheme": "Toggle light / dark",
+    "types": {
+      "image": "Image",
+      "video": "Video",
+      "folder": "Folder",
+      "document": "Document",
+      "audio": "Audio"
+    },
+    "footerHint": "Type to filter. Pick a file type, then search files with Enter.",
+    "footerFilter": "Enter runs the highlighted item, or search files."
+  },
+  "shortcuts": {
+    "cheatsheetTitle": "Shortcuts"
+  },
+  "format": {
+    "todayTime": "Today {{time}}",
+    "todayListRow": "Today | {{time}}"
+  },
+  "preview": {
+    "title": "File preview",
+    "loadFailed": "Could not load the file for preview.",
+    "unsupportedType": "This format cannot be previewed yet (legacy Word, drawio, etc.).",
+    "emptyFile": "This file is empty.",
+    "excelXlsOnly": "Legacy .xls is not supported. Save it as .xlsx first.",
+    "archiveEmpty": "This archive has no files.",
+    "archiveEncrypted": "Encrypted archives cannot be listed.",
+    "archiveSummary": "{{folders}} folders · {{files}} files",
+    "closeWindow": "Close",
+    "minimizeWindow": "Close",
+    "maximizeWindow": "Enter full screen",
+    "restoreWindow": "Exit full screen"
+  },
+  "fileErrors": {
+    "readFailed": "Failed to read file",
+    "chunkReadFailed": "Failed to read chunk"
+  },
+  "pagination": {
+    "pageOf": "Page {{current}} of {{total}}",
+    "rowsPerPage": "Rows per page",
+    "first": "First page",
+    "prev": "Previous page",
+    "next": "Next page",
+    "last": "Last page",
+    "pageSr": "Page {{n}}"
+  },
+  "bulkSelection": {
+    "suffix": "items selected",
+    "defaultToolbarName": "Bulk actions",
+    "toolbarAria": "{{label}}: {{count}} items selected",
+    "countBadgeAria": "{{count}} items selected",
+    "clear": "Clear selection",
+    "clearHint": "Clear selection (Esc)",
+    "announce": "{{count}} items selected. Bulk action bar is available."
+  }
+}

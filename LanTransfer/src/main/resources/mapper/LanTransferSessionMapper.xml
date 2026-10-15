@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.lan.mapper.LanTransferSessionMapper">
+
+    <insert id="insert">
+        INSERT INTO lan_transfer_session (id, from_user_id, to_user_id, files_json, status, created_at, updated_at)
+        VALUES (#{id}, #{fromUserId}, #{toUserId}, #{filesJson}, #{status}, NOW(), NOW())
+    </insert>
+
+    <select id="selectById" resultType="com.xddcodec.fs.lan.domain.LanTransferSession">
+        SELECT *
+        FROM lan_transfer_session
+        WHERE id = #{id}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE lan_transfer_session
+        SET status = #{status},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+</mapper>

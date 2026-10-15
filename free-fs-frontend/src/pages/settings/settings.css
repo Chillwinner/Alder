@@ -1,0 +1,419 @@
+/* ============================================================
+   Alder — 设置体系样式（仅本目录使用，前缀 set-）
+   ------------------------------------------------------------
+   只做「看起来」的事：分组卡片 / iOS 设置行 / 侧栏导航 / 面板切换。
+   色值一律走 src/styles 的 token，不写死颜色。
+   与 .a-* 同层（未分层），所以比 Tailwind utilities 优先级高：
+   需要覆盖 .a-input 的地方用 .a-input.set-* 提权，不用 !important。
+   ============================================================ */
+
+/* ---------------------------------------------------- 分组卡片 ---- */
+/*
+ * 设置分组 = 一张 demo 式卡片：
+ *   可选头部行（标题 + 描述）/ 行列表 / 可选底注。
+ * 头部行用 .set-group__head，和 .a-bcell__head 同构但由本页自己维护。
+ */
+.set-group {
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-2xs);
+  overflow: hidden;
+}
+.set-group + .set-group,
+.set-group + .set-group--spaced,
+.set-group--spaced {
+  margin-top: 16px;
+}
+.set-group__label {
+  padding: 15px 18px 7px;
+  font: 500 12.5px/1.4 var(--font-sans);
+  color: var(--text-muted);
+}
+.set-group__label--mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+/* 头部行：左标题 + 描述，右侧可选插槽（计数胶囊 / 次要按钮） */
+.set-group__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 18px 12px;
+}
+.set-group__head-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.set-group__head-title {
+  font: 600 15.5px/1.3 var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+.set-group__head-desc {
+  font: 400 12.5px/1.45 var(--font-sans);
+  color: var(--text-secondary);
+}
+.set-group__head-right {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+/* 头部行下面接第一条行时，压缩一点上边距 */
+.set-group__head + .set-row,
+.set-group__head + .set-field {
+  margin-top: 2px;
+}
+.set-group__note {
+  padding: 9px 18px 15px;
+  font: 400 12.5px/1.5 var(--font-sans);
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------- 设置行 ---- */
+.set-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 56px;
+  padding: 12px 16px;
+  border-radius: 13px;
+  transition:
+    background-color var(--motion-normal) var(--ease-glide),
+    transform var(--motion-micro) var(--ease-ios);
+}
+/* 行与行之间的分隔线：兼容 FormItem(display:contents) 包裹的写法 */
+.set-row + .set-row::before,
+.set-row + .set-field::before,
+.set-field + .set-row::before,
+.set-field + .set-field::before,
+.set-group > * + * > .set-row::before,
+.set-group > * + * > .set-field::before,
+.set-group .set-row + * > .set-row::before,
+.set-group .set-row + * > .set-field::before,
+.set-group .set-field + * > .set-row::before,
+.set-group .set-field + * > .set-field::before {
+  content: '';
+  position: absolute;
+  inset-inline: 16px;
+  top: 0;
+  height: 1px;
+  background: var(--divider);
+}
+.set-row--start {
+  align-items: flex-start;
+}
+.set-row--hover:hover,
+.set-row--button:hover {
+  background: var(--surface-hover);
+}
+.set-row--button {
+  width: 100%;
+  text-align: start;
+  cursor: pointer;
+}
+.set-row--button:active {
+  transform: scale(0.995);
+}
+.set-row--button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+.set-row__body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+.set-row__title {
+  font: 600 14.5px/1.35 var(--font-sans);
+  letter-spacing: -0.014em;
+  color: var(--foreground);
+}
+.set-row__desc {
+  font: 400 12.5px/1.5 var(--font-sans);
+  color: var(--text-secondary);
+}
+.set-row__desc--mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+.set-row__value {
+  flex: none;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.set-row__control {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+.set-row__chevron {
+  flex: none;
+  color: var(--text-muted);
+}
+
+/* 行图标：28–32px 圆角色底，每行一个语义色 */
+.set-row__ico {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--primary);
+}
+.set-row__ico--blue {
+  background: color-mix(in oklab, var(--t-doc) 16%, transparent);
+  color: var(--t-doc);
+}
+.set-row__ico--green {
+  background: color-mix(in oklab, var(--t-sheet) 18%, transparent);
+  color: var(--t-sheet);
+}
+.set-row__ico--orange {
+  background: color-mix(in oklab, var(--t-audio) 16%, transparent);
+  color: var(--t-audio);
+}
+.set-row__ico--purple {
+  background: color-mix(in oklab, var(--t-image) 16%, transparent);
+  color: var(--t-image);
+}
+.set-row__ico--red {
+  background: color-mix(in oklab, var(--t-pdf) 16%, transparent);
+  color: var(--t-pdf);
+}
+.set-row__ico--teal {
+  background: color-mix(in oklab, var(--t-code) 16%, transparent);
+  color: var(--t-code);
+}
+.set-row__ico--amber {
+  background: color-mix(in oklab, var(--t-slide) 24%, transparent);
+  color: var(--t-slide);
+}
+.set-row__ico--success {
+  background: color-mix(in oklab, var(--success) 16%, transparent);
+  color: var(--success);
+}
+.set-row__ico--warning {
+  background: color-mix(in oklab, var(--warning) 18%, transparent);
+  color: var(--warning);
+}
+.set-row__ico--neutral {
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+}
+
+/* 行内堆叠表单（长文案 / 多行输入） */
+.set-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 13px;
+}
+.set-field__head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* ---------------------------------------------------- 表单控件 ---- */
+/* 在既有 .a-input 上叠加（specificity 0,2,0 稳赢 0,1,0） */
+.a-input.set-select {
+  height: 40px;
+  padding-inline: 12px;
+  border-radius: var(--radius-sm);
+}
+.a-input.set-input-end {
+  padding-inline-end: 44px;
+}
+.a-input.set-textarea {
+  height: auto;
+  min-height: 92px;
+  align-items: flex-start;
+  padding: 12px 15px;
+  resize: vertical;
+}
+.a-input.set-input-sm {
+  height: 40px;
+  border-radius: var(--radius-sm);
+}
+.a-input.set-input-leading {
+  padding-inline-start: 38px;
+}
+.a-input.set-input-trailing {
+  padding-inline-end: 16px;
+}
+.a-input.set-input-full {
+  width: 100%;
+}
+.a-input.set-select-auto {
+  height: auto;
+  min-height: 52px;
+  align-items: flex-start;
+  padding-block: 10px;
+  border-radius: var(--radius-md);
+}
+.a-input.set-mono input,
+.a-input.set-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------- 侧栏导航 ---- */
+.set-nav {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 10px 12px 16px;
+}
+.set-nav__group + .set-nav__group {
+  margin-top: 10px;
+}
+.set-nav__grouplabel {
+  padding: 12px 11px 7px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+/* 胶囊列表：分组内是一张浅底圆角托盘，选中项是托盘里的实心胶囊 */
+.set-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--surface-secondary);
+}
+.set-nav__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  font: 500 13.5px/1 var(--font-sans);
+  letter-spacing: -0.008em;
+  color: var(--text-secondary);
+  transition:
+    background-color var(--motion-normal) var(--ease-glide),
+    color var(--motion-normal) var(--ease-glide),
+    box-shadow var(--motion-normal) var(--ease-ios),
+    transform var(--motion-micro) var(--ease-ios);
+}
+.set-nav__item:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+.set-nav__item:active {
+  transform: scale(0.985);
+}
+.set-nav__item[data-active='true'] {
+  background: var(--surface);
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow:
+    var(--shadow-sm),
+    inset 0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent);
+}
+/* 选中态的左侧指示条（胶囊内） */
+.set-nav__item[data-active='true']::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+/* ---------------------------------------------------- 面板切换 ---- */
+@keyframes set-panel-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.set-panel {
+  /* backwards 而非 both：避免把 transform 钉死在终态 */
+  animation: set-panel-in 420ms var(--ease-ios) backwards;
+}
+
+/* ---------------------------------------------------- 选择磁贴 ---- */
+.set-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  font: 500 13px/1.2 var(--font-sans);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-normal) var(--ease-glide),
+    border-color var(--motion-normal) var(--ease-glide),
+    color var(--motion-normal) var(--ease-glide);
+}
+.set-tile:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+.set-tile:has([data-state='checked']) {
+  border-color: var(--primary);
+  background: var(--accent-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------- 数据表 ---- */
+.set-table-head {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .set-panel,
+  .set-row,
+  .set-row--button:active,
+  .set-nav__item,
+  .set-nav__item:active,
+  .set-tile {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "new": {
+    "title": "創建工作空間",
+    "subtitle": "工作空間是團隊協作的基本單元，檔案、儲存和成員都歸屬於工作空間。",
+    "cardTitle": "工作空間資訊",
+    "cardDescription": "填寫基本資訊來創建你的工作空間",
+    "nameLabel": "工作空間名稱",
+    "namePlaceholder": "如：我的團隊",
+    "slugLabel": "唯一標識",
+    "slugPlaceholder": "如：my-team",
+    "slugHint": "僅允許小寫字母、數字和連字符，用於唯一標識工作空間。",
+    "descLabel": "描述（可選）",
+    "descPlaceholder": "簡要描述工作空間的用途...",
+    "back": "返回",
+    "submit": "創建工作空間",
+    "submitting": "創建中...",
+    "toastFill": "請填寫工作空間名稱和標識",
+    "toastSuccess": "工作空間創建成功",
+    "toastFail": "創建工作空間失敗",
+    "defaultName": "{{name}}的工作空間"
+  }
+}

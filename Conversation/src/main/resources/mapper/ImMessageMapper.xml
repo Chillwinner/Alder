@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.conversation.mapper.ImMessageMapper">
+
+    <sql id="messageVoColumns">
+        m.id,
+        m.client_msg_id AS clientMsgId,
+        m.conversation_id AS conversationId,
+        m.sender_id AS senderId,
+        u.username AS senderUsername,
+        u.nickname AS senderNickname,
+        u.avatar AS senderAvatar,
+        m.content,
+        m.msg_type AS msgType,
+        m.created_at AS createdAt,
+        m.recalled_at AS recalledAt,
+        m.quote_message_id AS quoteMessageId,
+        q.sender_id AS quoteSenderId,
+        COALESCE(qu.nickname, qu.username) AS quoteSenderName,
+        q.content AS quoteContent,
+        q.msg_type AS quoteMsgType,
+        CASE WHEN q.id IS NULL THEN NULL ELSE (q.recalled_at IS NOT NULL) END AS quoteRecalled
+    </sql>
+
+    <sql id="messageVoJoins">
+        FROM im_message m
+                 LEFT JOIN sys_user u ON u.id = m.sender_id
+                 LEFT JOIN im_message q ON q.id = m.quote_message_id
+                 LEFT JOIN sys_user qu ON qu.id = q.sender_id
+    </sql>
+
+    <select id="selectByClientMsg" resultType="com.xddcodec.fs.conversation.domain.ImMessage">
+        SELECT id, client_msg_id, conversation_id, sender_id, content, msg_type, created_at,
+               recalled_at, quote_message_id
+        FROM im_message
+        WHERE conversation_id = #{conversationId}
+          AND sender_id = #{senderId}
+          AND client_msg_id = #{clientMsgId}
+    </select>
+
+    <select id="selectById" resultType="com.xddcodec.fs.conversation.domain.ImMessage">
+        SELECT id, client_msg_id, conversation_id, sender_id, content, msg_type, created_at,
+               recalled_at, quote_message_id
+        FROM im_message
+        WHERE id = #{id}
+    </select>
+
+    <select id="listAfter" resultType="com.xddcodec.fs.conversation.domain.ImMessage">
+        SELECT id, client_msg_id, conversation_id, sender_id, content, msg_type, created_at,
+               recalled_at, quote_message_id
+        FROM im_message
+        WHERE conversation_id = #{conversationId}
+          AND id &gt; #{afterId}
+        ORDER BY id ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="listAfterVo" resultType="com.xddcodec.fs.conversation.domain.vo.ImMessageVO">
+        SELECT
+        <include refid="messageVoColumns"/>
+        <include refid="messageVoJoins"/>
+        WHERE m.conversation_id = #{conversationId}
+          AND m.id &gt; #{afterId}
+          AND NOT EXISTS (
+              SELECT 1 FROM im_message_hidden h
+              WHERE h.user_id = #{userId} AND h.message_id = m.id
+          )
+        ORDER BY m.id ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="listBeforeVo" resultType="com.xddcodec.fs.conversation.domain.vo.ImMessageVO">
+        SELECT
+        <include refid="messageVoColumns"/>
+        <include refid="messageVoJoins"/>
+        WHERE m.conversation_id = #{conversationId}
+          AND m.id &lt; #{beforeId}
+          AND NOT EXISTS (
+              SELECT 1 FROM im_message_hidden h
+              WHERE h.user_id = #{userId} AND h.message_id = m.id
+          )
+        ORDER BY m.id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="listLatestVo" resultType="com.xddcodec.fs.conversation.domain.vo.ImMessageVO">
+        SELECT
+        <include refid="messageVoColumns"/>
+        <include refid="messageVoJoins"/>
+        WHERE m.conversation_id = #{conversationId}
+          AND NOT EXISTS (
+              SELECT 1 FROM im_message_hidden h
+              WHERE h.user_id = #{userId} AND h.message_id = m.id
+          )
+        ORDER BY m.id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectLatestVisibleVo" resultType="com.xddcodec.fs.conversation.domain.vo.ImMessageVO">
+        SELECT
+        <include refid="messageVoColumns"/>
+        <include refid="messageVoJoins"/>
+        WHERE m.conversation_id = #{conversationId}
+          AND NOT EXISTS (
+              SELECT 1 FROM im_message_hidden h
+              WHERE h.user_id = #{userId} AND h.message_id = m.id
+          )
+        ORDER BY m.id DESC
+        LIMIT 1
+    </select>
+
+    <insert id="hideForUser">
+        INSERT INTO im_message_hidden (user_id, message_id, conversation_id, hidden_at)
+        VALUES (#{userId}, #{messageId}, #{conversationId}, NOW())
+        ON CONFLICT (user_id, message_id) DO NOTHING
+    </insert>
+
+    <select id="selectVoById" resultType="com.xddcodec.fs.conversation.domain.vo.ImMessageVO">
+        SELECT
+        <include refid="messageVoColumns"/>
+        <include refid="messageVoJoins"/>
+        WHERE m.id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO im_message (client_msg_id, conversation_id, sender_id, content, msg_type, created_at,
+                                quote_message_id)
+        VALUES (#{clientMsgId}, #{conversationId}, #{senderId}, #{content}, #{msgType},
+                COALESCE(#{createdAt}, NOW()), #{quoteMessageId})
+    </insert>
+
+    <update id="markRecalled">
+        UPDATE im_message
+        SET recalled_at = #{recalledAt}
+        WHERE id = #{id}
+          AND recalled_at IS NULL
+    </update>
+</mapper>

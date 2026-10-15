@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.conversation.mapper.ImUserCryptoMapper">
+
+    <select id="selectByUserId" resultType="com.xddcodec.fs.conversation.domain.ImUserCrypto">
+        SELECT user_id, public_key_spki, key_proof, created_at, updated_at
+        FROM im_user_crypto
+        WHERE user_id = #{userId}
+    </select>
+
+    <insert id="upsert">
+        INSERT INTO im_user_crypto (user_id, public_key_spki, key_proof, created_at, updated_at)
+        VALUES (#{userId}, #{publicKeySpki}, #{keyProof}, NOW(), NOW())
+        ON CONFLICT (user_id) DO UPDATE
+            SET public_key_spki = EXCLUDED.public_key_spki,
+                key_proof       = EXCLUDED.key_proof,
+                updated_at      = NOW()
+    </insert>
+</mapper>

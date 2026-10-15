@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.workspaceboard.mapper.WorkspaceBoardPinnedFileMapper">
+
+    <select id="selectPinnedFileIds" resultType="java.lang.String">
+        SELECT file_id
+        FROM workspace_board_pinned_file
+        WHERE workspace_id = #{workspaceId}
+        ORDER BY pinned_at ASC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO workspace_board_pinned_file (workspace_id, file_id, pinned_at)
+        VALUES (#{workspaceId}, #{fileId}, NOW())
+        ON CONFLICT (workspace_id, file_id) DO NOTHING
+    </insert>
+
+    <delete id="delete">
+        DELETE
+        FROM workspace_board_pinned_file
+        WHERE workspace_id = #{workspaceId}
+          AND file_id = #{fileId}
+    </delete>
+</mapper>

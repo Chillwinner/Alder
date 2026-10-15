@@ -1,0 +1,536 @@
+/* ============================================================
+   Alder — iOS 26 材质与文件图标层
+
+   ① 字体      Geist / Geist Mono（自托管，不请求 Google Fonts）
+   ② .a-glass  玻璃材质（backdrop-filter + 顶部内高光 + 渐变边缘透镜）
+   ③ .a-glyph  文件类型专属图标：Google Workspace 造型 + 自有动画
+   ④ .a-tile   卡片：双包边（外壳托盘 + 内层玻璃核心）
+
+   注意：内纹必须内联在 DOM 里。用 <use> 引用 symbol 时内容是影子树，
+   外部 CSS 选择器命中不了内部形状，动画就没了。
+   ============================================================ */
+
+/* ============================================================ ① 字体 ==== */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url('/fonts/geist-latin-var.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/geist-mono-latin-var.woff2') format('woff2');
+}
+
+/* ============================================================ ② 玻璃材质 === */
+/*
+   三层，缺一层就不是 iOS 26 的玻璃：
+     本体      backdrop-filter 饱和增强 + 多层内阴影
+     ::before  顶部内高光，给出玻璃的厚度
+     ::after   渐变描边（mask-composite 挖环），模拟边缘折射亮边
+*/
+/*
+    ⚠️ 这段必须在 @layer components 里，不能未分层。
+       alder.css 原本整份都是未分层的，而未分层样式**赢过 Tailwind 的 utilities 层** ——
+       结果就是 .a-glass 上的 position:relative 把弹窗的 fixed 工具类压掉了：
+       聊天弹窗 position 变成 relative，跑到正常流里，垂直偏移了 974px，根本不在屏幕中央。
+       放进 components 层后，fixed / absolute / sticky 等定位工具类才能正常覆盖它。
+*/
+@layer components {
+  .a-glass {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+}
+.a-glass--strong {
+  background: var(--card);
+}
+.a-glass--thin {
+  background: var(--surface-secondary);
+}
+
+/* 指针柔光：跟着指针在玻璃表面游走（只动 transform） */
+.a-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 62%);
+  mix-blend-mode: soft-light;
+  transition: opacity var(--motion-panel) var(--ease-glide);
+  will-change: transform;
+}
+.dark .a-glare {
+  background: radial-gradient(circle, rgba(170, 205, 255, 0.42), rgba(170, 205, 255, 0) 62%);
+  mix-blend-mode: screen;
+}
+
+/* ========================================================= ② 文件图标 ==== */
+/* Google 造型规则：自家格式＝实色圆角页（无折角）；其它＝带折角的页面。 */
+.a-glyph {
+  --sz: 36px;
+  width: 54px;
+  height: 54px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  perspective: 220px;
+}
+.a-glyph svg {
+  width: var(--sz);
+  height: var(--sz);
+  display: block;
+  /*
+    ⚠️ overflow: visible 是给 hover 动画用的（PDF 的 rotateY、文件夹的 flap 旋转、
+       图片的 sun 弹出都会短暂越出 viewBox）—— 裁掉的话动画会被切边。
+
+    但它同时意味着「静止态如果图形本身超出 viewBox，就会溢出容器」。
+    容器 .a-glyph 用 padding 留了安全区（见下面），
+    所以这里保留 visible，让动画完整；图形本身的比例问题已在
+    file-icon.tsx 里统一（各类型的视觉包围盒对齐到同一宽度）。
+  */
+  overflow: visible;
+}
+.a-glyph .pg {
+  fill: var(--tc);
+}
+.a-glyph .fold {
+  fill: rgba(255, 255, 255, 0.34);
+  stroke: none;
+}
+.dark .a-glyph .fold {
+  fill: rgba(0, 0, 0, 0.22);
+}
+.a-glyph .ln,
+.a-glyph .gr,
+.a-glyph .zip,
+.a-glyph .zipt,
+.a-glyph .cut,
+.a-glyph .chL,
+.a-glyph .chR,
+.a-glyph .wave {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.a-glyph .blk,
+.a-glyph .sun,
+.a-glyph .play {
+  fill: #fff;
+  stroke: none;
+}
+.a-glyph .flap {
+  fill: rgba(255, 255, 255, 0.34);
+  /* view-box：父级 PressTilt 写 transform 时 fill-box 会算错原点，盖子看起来像没动 */
+  transform-box: view-box;
+  transform-origin: 12px 11px;
+  transition: transform var(--motion-panel) var(--ease-spring);
+}
+.a-glyph--sm {
+  --sz: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+.a-glyph--lg {
+  --sz: 56px;
+  width: 84px;
+  height: 84px;
+  border-radius: 25px;
+}
+.a-glyph .ln,
+.a-glyph .gr,
+.a-glyph .zip,
+.a-glyph .zipt,
+.a-glyph .wave,
+.a-glyph .chL,
+.a-glyph .chR,
+.a-glyph .sun,
+.a-glyph .play,
+.a-glyph .blk {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.a-glyph .cut {
+  stroke: var(--tc);
+  stroke-width: 1.2;
+}
+@keyframes a-ico-pop {
+  0% {
+    transform: none;
+  }
+  42% {
+    transform: translateY(-2px) scale(1.07);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes a-ink-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes a-page-flip {
+  0% {
+    transform: none;
+  }
+  42% {
+    transform: rotateY(-28deg) translateX(1px);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes a-pop-in {
+  from {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes a-sun-up {
+  from {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes a-play-pulse {
+  0% {
+    opacity: 0.3;
+    transform: scale(0.6);
+  }
+  58% {
+    transform: scale(1.16);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes a-wave-jump {
+  0% {
+    transform: scaleY(0.35);
+  }
+  45% {
+    transform: scaleY(1.28);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes a-ch-l {
+  0% {
+    transform: translateX(2.6px);
+  }
+  55% {
+    transform: translateX(-1.9px);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes a-ch-r {
+  0% {
+    transform: translateX(-2.6px);
+  }
+  55% {
+    transform: translateX(1.9px);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes a-folder-lift {
+  0% {
+    transform: none;
+  }
+  45% {
+    transform: translateY(-1.6px);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* 悬停时才跑动画。宿主统一用 .a-hoverable 标记。 */
+.a-hoverable:hover .a-glyph svg {
+  animation: a-ico-pop var(--motion-panel) var(--ease-spring);
+}
+.a-hoverable:hover .a-glyph[data-type='doc'] .ln {
+  animation: a-ink-in 460ms var(--ease-glide) both;
+  animation-delay: var(--d, 0ms);
+}
+.a-hoverable:hover .a-glyph[data-type='pdf'] svg {
+  animation: a-page-flip 640ms var(--ease-ios);
+}
+.a-hoverable:hover .a-glyph[data-type='pdf'] .blk {
+  animation: a-ink-in 420ms var(--ease-glide) both 140ms;
+}
+.a-hoverable:hover .a-glyph[data-type='sheet'] .gr {
+  animation: a-ink-in 500ms var(--ease-glide) both;
+  animation-delay: var(--d, 0ms);
+}
+.a-hoverable:hover .a-glyph[data-type='slides'] .blk {
+  animation: a-pop-in 460ms var(--ease-spring) both;
+}
+.a-hoverable:hover .a-glyph[data-type='image'] .sun {
+  animation: a-sun-up 560ms var(--ease-spring) both;
+}
+.a-hoverable:hover .a-glyph[data-type='image'] .ln {
+  animation: a-ink-in 500ms var(--ease-glide) both 90ms;
+}
+.a-hoverable:hover .a-glyph[data-type='video'] .play {
+  animation: a-play-pulse 620ms var(--ease-spring) both;
+}
+.a-hoverable:hover .a-glyph[data-type='audio'] .wave {
+  animation: a-wave-jump 620ms var(--ease-glide) both;
+  animation-delay: var(--d, 0ms);
+}
+.a-hoverable:hover .a-glyph[data-type='archive'] .zip {
+  animation: a-ink-in 520ms var(--ease-glide) both;
+}
+.a-hoverable:hover .a-glyph[data-type='archive'] .zipt {
+  animation: a-ink-in 400ms var(--ease-glide) both;
+  animation-delay: var(--d, 0ms);
+}
+.a-hoverable:hover .a-glyph[data-type='code'] .chL {
+  animation: a-ch-l 520ms var(--ease-spring) both;
+}
+.a-hoverable:hover .a-glyph[data-type='code'] .chR {
+  animation: a-ch-r 520ms var(--ease-spring) both;
+}
+.a-hoverable:hover .a-glyph[data-type='folder'] .flap {
+  transform: rotate(-22deg) translateY(-1.4px);
+}
+.a-hoverable:hover .a-glyph[data-type='folder'] svg {
+  animation: a-folder-lift 520ms var(--ease-spring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .a-hoverable:hover .a-glyph svg,
+  .a-hoverable:hover .a-glyph * {
+    animation: none !important;
+  }
+  .a-glyph .flap {
+    transition: none;
+  }
+}
+
+/* 未读角标的「呼吸」环：范围小、衰减快，替代 NEBULA 的 animate-ping 大光晕 */
+@keyframes a-badge-breathe {
+  0% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+.a-badge-ring {
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  pointer-events: none;
+  background: var(--destructive);
+  animation: a-badge-breathe 2.4s var(--ease-glide) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .a-badge-ring {
+    animation: none;
+    opacity: 0.22;
+  }
+}
+
+/* ============================================================ ③ 卡片 ==== */
+/* 双包边：外层托盘（浅色壳）+ 内层玻璃核心，圆角同心 */
+.a-tile {
+  position: relative;
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+  transition:
+    transform var(--motion-panel) var(--ease-out-expo),
+    box-shadow var(--motion-panel) var(--ease-out-expo),
+    border-color var(--motion-normal) var(--ease-out-expo);
+}
+.a-tile > .a-tile__core {
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
+  background: transparent;
+}
+.a-hoverable:hover .a-tile {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+.a-hoverable:active .a-tile {
+  transform: translateY(0) scale(0.99);
+}
+
+/* ============================================================
+   文件卡片 / 文件网格 —— 从 demo pages.css 的 .fgrid / .fcard 原样搬过来
+   ------------------------------------------------------------
+   demo 的卡片是**两层**：
+     .a-fcard        外层 5px 玻璃托底（负责圆角外圈与投影）
+     .a-fcard__inner 内层玻璃（真正的内容面板，圆角 = 外圆角 - 5px）
+   两层圆角同心，这是 iOS 26 「同心圆角」的做法，单层做不到这种边缘厚度。
+
+   ⚠️ 整段放在 @layer components 里：alder.css 如果未分层会赢过
+      Tailwind 的 utilities 层（.a-glass 就是这么把 fixed 压掉的）。
+      这里卡片要接受工具类微调，所以必须待在层内。
+   ============================================================ */
+@layer components {
+  .a-fgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+    gap: 13px;
+    /* 同一行的卡片等高（grid 默认行为），配合下面 .a-fcard 的 flex
+       才能让 __inner 撑满，否则文件夹卡会矮一截、下方留洞。*/
+    align-items: stretch;
+  }
+
+  .a-fcard {
+    position: relative;
+    border-radius: var(--radius-lg);
+    /* display:flex 让 __inner 的 height:100% 能撑满网格拉伸后的高度 */
+    display: flex;
+    flex-direction: column;
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+    /* translate 基线交给 PressTilt 的弹簧写；这里不挂 translate 过渡 */
+    translate: 0 0;
+    transition:
+      background-color var(--motion-normal) var(--ease-out-expo),
+      border-color var(--motion-normal) var(--ease-out-expo),
+      box-shadow var(--motion-panel) var(--ease-out-expo);
+  }
+  .a-fcard__inner {
+    position: relative;
+    overflow: visible;
+    border-radius: calc(var(--radius-lg) - 1px);
+    padding: 13px 13px 12px;
+    min-height: 168px;
+    /* height:100% 不能省：否则同一行里内容少的卡片（文件夹）会矮一截 */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: transparent;
+  }
+  .a-hoverable:hover .a-fcard {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  .a-fcard__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /*
+    ⚠️ 这里**去掉**了 margin-top: auto。
+    ------------------------------------------------------------
+    原来 `.a-fcard__meta { margin-top: auto }` 会把 flex 容器里
+    **所有剩余空间**都塞在元信息上方 —— 实测名称和元信息之间空出 31px，
+    文件夹卡（内容少）看起来就是"内容挤在上半部分、下面一大块空"。
+    （即便 __inner 已经撑满托盘，空当也只是从卡片底部挪到了中间。）
+
+    改成：让**名称区**吸收剩余空间（flex: 1），
+    于是元信息与底部标签自然贴住卡片下沿，
+    名称与元信息之间不再有过大的死区 —— 这才是"占满"的读法。
+  */
+  .a-fcard__name {
+    font: 550 13.5px/1.35 var(--font-sans);
+    letter-spacing: -0.014em;
+    color: var(--foreground);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.7em;
+    word-break: break-word;
+    /* 吸收剩余空间，避免空当集中在 meta 上方 */
+    flex: 1 1 auto;
+  }
+
+  .a-fcard__meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    /* ⚠️ 不要改回 margin-top: auto（见上面 __name 的说明） */
+    min-width: 0;
+    font: 400 12px/1.4 var(--font-sans);
+    color: var(--text-secondary);
+  }
+  .a-fcard__meta .a-fcard__dot {
+    opacity: 0.5;
+  }
+
+  /* demo：底部一行用分隔线与正文隔开（头像 + 类型标签） */
+  .a-fcard__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 9px;
+    border-top: 1px solid var(--divider);
+  }
+
+  /* 选中 / 拖放目标：描边放在外层，和内层玻璃不打架 */
+  .a-fcard.selected {
+    box-shadow:
+      0 0 0 2px var(--primary),
+      var(--shadow);
+  }
+  .a-fcard.is-folder-drop-target {
+    background: var(--accent-soft);
+    box-shadow:
+      0 0 0 2px var(--primary),
+      var(--shadow);
+  }
+}
+
+/* 未分层：压过 index.css 里 [data-tilt] { overflow: hidden }，否则文件夹掀盖/纸张会被裁掉 */
+[data-tilt].a-fcard {
+  overflow: visible;
+}
+

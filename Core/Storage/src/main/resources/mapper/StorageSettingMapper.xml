@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.storage.mapper.StorageSettingMapper">
+
+    <insert id="insert">
+        INSERT INTO storage_settings
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="platformIdentifier != null">platform_identifier,</if>
+            <if test="configData != null">config_data,</if>
+            <if test="enabled != null">enabled,</if>
+            <if test="workspaceId != null">workspace_id,</if>
+            <if test="remark != null">remark,</if>
+            <if test="deleted != null">deleted,</if>
+            created_at,
+            updated_at,
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="platformIdentifier != null">#{platformIdentifier},</if>
+            <if test="configData != null">CAST(#{configData} AS json),</if>
+            <if test="enabled != null">#{enabled},</if>
+            <if test="workspaceId != null">#{workspaceId},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="deleted != null">#{deleted},</if>
+            now(),
+            now(),
+        </trim>
+    </insert>
+
+    <update id="updateById">
+        UPDATE storage_settings
+        <set>
+            <if test="platformIdentifier != null">platform_identifier = #{platformIdentifier},</if>
+            <if test="configData != null">config_data = CAST(#{configData} AS json),</if>
+            <if test="enabled != null">enabled = #{enabled},</if>
+            <if test="workspaceId != null">workspace_id = #{workspaceId},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="deleted != null">deleted = #{deleted},</if>
+            updated_at = now(),
+        </set>
+        WHERE id = #{id} AND deleted = 0
+    </update>
+</mapper>

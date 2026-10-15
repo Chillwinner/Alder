@@ -1,0 +1,12 @@
+.git
+.idea
+.cursor
+**/target
+**/node_modules
+**/.vite
+docs
+_doc
+问题.md
+*.tgz
+Common/src/main/java/com/xddcodec/fs/uploads
+!Common/src/main/java/com/xddcodec/fs/uploads/.gitkeep

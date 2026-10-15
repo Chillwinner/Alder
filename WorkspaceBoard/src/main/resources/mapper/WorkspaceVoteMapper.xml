@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.workspaceboard.mapper.WorkspaceVoteMapper">
+
+    <insert id="insertVote">
+        INSERT INTO workspace_vote (id, workspace_id, title, created_by, created_at)
+        VALUES (#{id}, #{workspaceId}, #{title}, #{createdBy}, NOW())
+    </insert>
+
+    <insert id="insertParticipants">
+        INSERT INTO workspace_vote_participant (vote_id, user_id)
+        VALUES
+        <foreach collection="userIds" item="userId" separator=",">
+            (#{voteId}, #{userId})
+        </foreach>
+    </insert>
+
+    <select id="selectByWorkspace" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceVoteRow">
+        SELECT v.id,
+               v.workspace_id,
+               w.name AS workspace_name,
+               w.slug AS workspace_slug,
+               v.title,
+               v.created_by,
+               COALESCE(NULLIF(u.nickname, ''), u.username) AS creator_name,
+               v.created_at,
+               (SELECT COUNT(*) FROM workspace_vote_participant p WHERE p.vote_id = v.id AND p.choice = 'AGREE') AS agree_count,
+               (SELECT COUNT(*) FROM workspace_vote_participant p WHERE p.vote_id = v.id AND p.choice = 'DISAGREE') AS disagree_count,
+               (SELECT COUNT(*) FROM workspace_vote_participant p WHERE p.vote_id = v.id AND p.choice IS NULL) AS pending_count,
+               (SELECT p.choice FROM workspace_vote_participant p WHERE p.vote_id = v.id AND p.user_id = #{userId}) AS my_choice
+        FROM workspace_vote v
+                 LEFT JOIN sys_workspace w ON w.id = v.workspace_id
+                 LEFT JOIN sys_user u ON u.id = v.created_by
+        WHERE v.workspace_id = #{workspaceId}
+        ORDER BY v.created_at DESC
+    </select>
+
+    <select id="selectParticipants" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceVoteParticipantRow">
+        SELECT p.vote_id,
+               p.user_id,
+               u.username,
+               u.nickname,
+               u.avatar,
+               p.choice
+        FROM workspace_vote_participant p
+                 LEFT JOIN sys_user u ON u.id = p.user_id
+        WHERE p.vote_id IN
+        <foreach collection="voteIds" item="voteId" open="(" separator="," close=")">
+            #{voteId}
+        </foreach>
+        ORDER BY COALESCE(NULLIF(u.nickname, ''), u.username)
+    </select>
+
+    <select id="selectPending" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceVoteRow">
+        SELECT v.id,
+               v.workspace_id,
+               w.name AS workspace_name,
+               w.slug AS workspace_slug,
+               v.title,
+               v.created_at
+        FROM workspace_vote_participant p
+                 JOIN workspace_vote v ON v.id = p.vote_id
+                 JOIN sys_workspace w ON w.id = v.workspace_id
+        WHERE p.user_id = #{userId}
+          AND p.choice IS NULL
+        ORDER BY v.created_at DESC
+    </select>
+
+    <select id="selectCreated" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceVoteRow">
+        SELECT v.id,
+               v.workspace_id,
+               w.name AS workspace_name,
+               w.slug AS workspace_slug,
+               v.title,
+               v.created_by,
+               COALESCE(NULLIF(u.nickname, ''), u.username) AS creator_name,
+               v.created_at,
+               (SELECT COUNT(*) FROM workspace_vote_participant p WHERE p.vote_id = v.id AND p.choice = 'AGREE') AS agree_count,
+               (SELECT COUNT(*) FROM workspace_vote_participant p WHERE p.vote_id = v.id AND p.choice = 'DISAGREE') AS disagree_count,
+               (SELECT COUNT(*) FROM workspace_vote_participant p WHERE p.vote_id = v.id AND p.choice IS NULL) AS pending_count,
+               (SELECT p.choice FROM workspace_vote_participant p WHERE p.vote_id = v.id AND p.user_id = #{userId}) AS my_choice
+        FROM workspace_vote v
+                 LEFT JOIN sys_workspace w ON w.id = v.workspace_id
+                 LEFT JOIN sys_user u ON u.id = v.created_by
+        WHERE v.created_by = #{userId}
+        ORDER BY v.created_at DESC
+        LIMIT 12
+    </select>
+
+    <select id="selectById" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceVoteRow">
+        SELECT id, workspace_id, title, created_by, created_at
+        FROM workspace_vote
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectParticipant" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceVoteParticipantRow">
+        SELECT vote_id, user_id, choice
+        FROM workspace_vote_participant
+        WHERE vote_id = #{voteId}
+          AND user_id = #{userId}
+    </select>
+
+    <update id="castChoice">
+        UPDATE workspace_vote_participant
+        SET choice = #{choice},
+            voted_at = NOW()
+        WHERE vote_id = #{voteId}
+          AND user_id = #{userId}
+          AND choice IS NULL
+    </update>
+</mapper>

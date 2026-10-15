@@ -1,0 +1,380 @@
+.memo-canvas {
+  --mc-radius: 6px;
+  --mc-dot: color-mix(in oklab, var(--foreground) 10%, transparent);
+  position: relative;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 1px 1px, var(--mc-dot) 1px, transparent 0) 0 0 / 22px 22px,
+    color-mix(in oklab, var(--background) 94%, var(--muted));
+}
+
+.memo-canvas .react-flow__background { background: transparent; }
+.memo-canvas .react-flow__attribution { display: none; }
+.memo-canvas .react-flow__handle {
+  z-index: 2;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--background);
+  background: var(--foreground);
+  opacity: 0;
+}
+.memo-canvas .react-flow__node:hover .react-flow__handle,
+.memo-canvas .react-flow__node.selected .react-flow__handle,
+.memo-canvas .react-flow__handle:hover,
+.memo-canvas .react-flow__handle.connecting { opacity: 1; }
+.memo-canvas .react-flow__edge-path {
+  stroke: color-mix(in oklab, var(--foreground) 55%, transparent);
+  stroke-width: 1.6;
+}
+.memo-canvas .react-flow__connection-path {
+  stroke: color-mix(in oklab, var(--foreground) 45%, transparent);
+  stroke-width: 1.6;
+}
+.memo-canvas .react-flow__node-text,
+.memo-canvas .react-flow__node-file,
+.memo-canvas .react-flow__node-link,
+.memo-canvas .react-flow__node-group {
+  overflow: visible;
+}
+.memo-canvas .react-flow__resize-control {
+  z-index: 3;
+}
+.memo-canvas .react-flow__resize-control.handle {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  background: transparent;
+}
+.memo-canvas .react-flow__resize-control.line {
+  border: 0;
+  background: transparent;
+}
+.memo-canvas .react-flow__resize-control.line.left,
+.memo-canvas .react-flow__resize-control.line.right {
+  width: 14px;
+}
+.memo-canvas .react-flow__resize-control.line.top,
+.memo-canvas .react-flow__resize-control.line.bottom {
+  height: 14px;
+}
+
+.memo-card-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.memo-card {
+  display: flex;
+  height: 100%;
+  min-height: 72px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 2px solid color-mix(in oklab, var(--foreground) 22%, var(--border));
+  border-radius: var(--mc-radius);
+  background: color-mix(in oklab, var(--card) 58%, transparent);
+}
+.memo-card[data-color] {
+  border-color: var(--mc-color);
+  background: color-mix(in oklab, var(--mc-color) 16%, transparent);
+}
+.memo-card.selected { box-shadow: 0 0 0 2px color-mix(in oklab, var(--foreground) 22%, transparent); }
+
+.memo-card__bar {
+  display: flex;
+  height: 28px;
+  flex-shrink: 0;
+  align-items: center;
+  border-bottom: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.memo-card__body { min-height: 0; flex: 1; overflow: auto; padding: 8px 10px; }
+.memo-card__media {
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+  border-radius: inherit;
+  background: color-mix(in oklab, var(--muted) 40%, var(--card));
+}
+.memo-card__media img {
+  display: block;
+  border-radius: inherit;
+}
+.memo-card__file-ref {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: grab;
+}
+.memo-card__file-ref-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.memo-card__file-ref-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+.memo-card__file-ref-size {
+  font-size: 11px;
+  color: color-mix(in oklab, var(--foreground) 52%, transparent);
+}
+.memo-card textarea,
+.memo-card .ProseMirror,
+.memo-card__editor {
+  min-height: 100%;
+  height: 100%;
+  width: 100%;
+  resize: none;
+  border: 0;
+  background: transparent;
+  cursor: text;
+  font: inherit;
+  outline: none;
+  user-select: text;
+}
+.memo-card__grip {
+  height: 10px;
+  flex-shrink: 0;
+  cursor: grab;
+}
+.memo-card__grip:active { cursor: grabbing; }
+.memo-card .memo-format-host { min-height: 0; flex: 1; }
+.memo-card__frame {
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  border: 0;
+  background: #fff;
+  pointer-events: none;
+}
+.memo-card__web-shield {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+}
+.memo-card__web-shield:active { cursor: grabbing; }
+.memo-card__media:has(iframe) { position: relative; }
+.memo-card__media.is-live .memo-card__frame { pointer-events: auto; }
+.memo-edge-label {
+  position: absolute;
+  z-index: 4;
+  pointer-events: all;
+}
+.memo-edge-label span,
+.memo-edge-label input {
+  display: block;
+  min-width: 28px;
+  max-width: 220px;
+  border: 1px solid color-mix(in oklab, #111 12%, transparent);
+  border-radius: 4px;
+  background: #fff;
+  color: #111;
+  padding: 2px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+.memo-edge-label span[data-empty] {
+  color: #888;
+}
+.memo-edge-label input {
+  outline: none;
+}
+
+.memo-group {
+  height: 100%;
+  overflow: visible;
+  border: 2px dashed color-mix(in oklab, var(--foreground) 22%, var(--border));
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--card) 40%, transparent);
+}
+.memo-group[data-color] {
+  border-color: var(--mc-color);
+  background: color-mix(in oklab, var(--mc-color) 14%, transparent);
+}
+.memo-group input {
+  margin: 8px 10px;
+  width: calc(100% - 20px);
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+}
+
+.memo-canvas-dock {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  z-index: 6;
+  display: flex;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 10px;
+}
+.memo-canvas-dock button,
+.memo-canvas-zoom button {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid color-mix(in oklab, var(--foreground) 8%, var(--border));
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--card) 96%, transparent);
+  color: var(--foreground);
+  box-shadow: 0 1px 3px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+.memo-canvas-dock button:hover,
+.memo-canvas-zoom button:hover { background: var(--card); }
+.memo-canvas-zoom {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  z-index: 6;
+  display: flex;
+  transform: translateY(-50%);
+  flex-direction: column;
+  gap: 8px;
+}
+.memo-canvas-zoom span {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.memo-canvas-picker {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklab, var(--background) 28%, transparent);
+}
+.memo-canvas-picker__panel {
+  display: flex;
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(520px, 70vh);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+}
+.memo-canvas-picker__head {
+  padding: 14px 14px 8px;
+}
+.memo-canvas-picker__head h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.memo-canvas-picker__head input {
+  width: 100%;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  padding: 0 10px;
+  font-size: 13px;
+  outline: none;
+}
+.memo-canvas-picker__list {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding: 4px 8px 12px;
+}
+.memo-canvas-picker__list button {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 8px 10px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.memo-canvas-picker__list button:hover { background: var(--muted); }
+.memo-canvas-picker__empty {
+  padding: 24px 12px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  text-align: center;
+}
+
+.memo-card-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 4px;
+  box-shadow: var(--shadow-sm);
+}
+.memo-card-toolbar button { height: 26px; border: 0; border-radius: 6px; background: transparent; padding: 0 7px; font-size: 12px; }
+.memo-card-toolbar button:hover { background: var(--muted); }
+.memo-swatch {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 99px;
+}
+
+.memo-wiki-canvas {
+  display: block;
+  max-width: min(100%, 420px);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  text-align: left;
+}
+.memo-wiki-canvas img,
+.memo-wiki-canvas > span:first-child {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  min-height: 140px;
+  background:
+    radial-gradient(circle at 1px 1px, color-mix(in oklab, var(--foreground) 10%, transparent) 1px, transparent 0)
+      0 0 / 16px 16px,
+    var(--muted);
+}
+.memo-wiki-canvas span:last-child {
+  display: block;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.memo-embed__gone,
+.memo-embed__cycle {
+  display: grid;
+  min-height: 80px;
+  place-items: center;
+  color: var(--muted-foreground);
+  font-size: 12.5px;
+  text-align: center;
+}

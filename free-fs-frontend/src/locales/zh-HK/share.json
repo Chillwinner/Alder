@@ -1,0 +1,93 @@
+{
+  "toast": {
+    "enterCode": "請輸入提取碼",
+    "codeWrong": "提取碼錯誤",
+    "downloadStart": "開始下載檔案",
+    "downloadFail": "下載失敗，請稍後重試",
+    "folderPreparing": "正在準備下載 {{name}}",
+    "folderTaskFail": "創建資料夾下載任務失敗",
+    "folderPackFail": "資料夾打包失敗",
+    "folderDownloadStart": "已交給瀏覽器下載 {{name}}",
+    "folderZipDownloadFail": "{{name}} 下載啟動失敗",
+    "folderPackCanceled": "資料夾打包已取消",
+    "folderCancelFail": "取消資料夾打包失敗",
+    "saveOk": "已保存到個人空間",
+    "saveNeedLogin": "請先登入後再保存",
+    "saveNoDownload": "該分享不允許保存"
+  },
+  "saveToWorkspace": {
+    "title": "保存到個人空間",
+    "confirm": "保存到這裡",
+    "action": "保存到空間",
+    "workspace": "目標工作空間",
+    "workspacePlaceholder": "選擇工作空間"
+  },
+  "errors": {
+    "network": "網絡連接失敗，請檢查網絡",
+    "notFound": "分享不存在或已被刪除",
+    "server": "伺服器錯誤，請稍後重試",
+    "generic": "獲取分享資訊失敗"
+  },
+  "loading": {
+    "fetching": "正在獲取分享資訊...",
+    "list": "載入中..."
+  },
+  "errorState": {
+    "hint": "無法獲取分享資訊，請稍後重試",
+    "reload": "重新載入"
+  },
+  "expired": {
+    "title": "分享已過期",
+    "desc": "該分享連結已過期，無法訪問",
+    "at": "過期時間：{{time}}"
+  },
+  "verify": {
+    "defaultBrand": "Free-fs",
+    "title": "{{name}} 的檔案分享",
+    "needCode": "需要提取碼才能訪問",
+    "placeholder": "請輸入提取碼",
+    "submit": "查看檔案",
+    "verifying": "驗證中..."
+  },
+  "browse": {
+    "fileCount": "{{count}} 個檔案",
+    "root": "根目錄",
+    "totalFiles": "共 {{count}} 個檔案",
+    "listView": "列表視圖",
+    "gridView": "網格視圖",
+    "empty": "暫無檔案",
+    "footer": "已載入全部內容",
+    "canDownload": "可下載",
+    "previewOnly": "僅預覽"
+  },
+  "expire": {
+    "permanent": "永久有效",
+    "expired": "已過期",
+    "today": "今天到期",
+    "tomorrow": "明天到期",
+    "inDays": "{{days}}天后到期",
+    "onDate": "{{date}} 到期"
+  },
+  "fileList": {
+    "name": "檔案名",
+    "type": "類型",
+    "size": "大小",
+    "modified": "修改時間",
+    "actions": "操作",
+    "preview": "預覽",
+    "download": "下載",
+    "save": "保存到空間",
+    "folderType": "資料夾",
+    "unknownType": "未知",
+    "unavailable": "檔案已失效"
+  },
+  "sort": {
+    "fieldAria": "選擇排序字段",
+    "name": "按名稱",
+    "modified": "按修改時間",
+    "type": "按類型",
+    "size": "按大小",
+    "ascending": "升序",
+    "descending": "降序"
+  }
+}

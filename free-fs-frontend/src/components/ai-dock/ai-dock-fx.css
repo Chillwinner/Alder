@@ -1,0 +1,450 @@
+/* ============================================================
+   ai-dock-fx.css — 右下角合并悬浮球 + 空间助手面板
+   仅服务 src/components/ai-dock/**。
+
+   背景：src/styles/index.css 里的 .ai-launch / .ai-sheet 是上一代
+   NEBULA 的「深色科技面板」（青色描边 + 扫描线 + 波形标记）。
+   本文件把它们收回 iOS 26 语言：
+     · 悬浮球 = 系统蓝实心球 + 白色图标 + 柔和投影（demo .orb）
+     · 面板   = 一块玻璃 + a- 级排版（眉标 / 标题 / 胶囊按钮）
+     · 去掉扫描线与光环（常驻循环动效，契约禁止）
+   覆盖方式：全部规则挂在 .im-ai-launch / .im-ai-panel 这两个
+   额外类上，特异性 0,2,0，稳压 index.css 的 0,1,0，与加载顺序无关。
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. 悬浮球
+   ------------------------------------------------------------ */
+.ai-launch.im-ai-launch {
+  width: 56px;
+  height: 56px;
+  color: var(--primary-foreground);
+  background: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--primary) 76%, var(--primary-foreground)),
+    var(--primary)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--primary-foreground) 55%, transparent),
+    0 10px 28px -10px color-mix(in oklab, var(--primary) 78%, transparent),
+    0 26px 54px -26px color-mix(in oklab, var(--foreground) 55%, transparent);
+  transition:
+    right 200ms ease,
+    box-shadow 240ms var(--ease-glide),
+    scale 240ms var(--ease-spring);
+  overflow: visible;
+}
+
+/* 打开 / 右键菜单展开时：外圈强调环，球本身不位移 */
+.ai-launch.im-ai-launch[aria-expanded='true'] {
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--primary-foreground) 55%, transparent),
+    0 0 0 4px var(--accent-soft),
+    0 10px 28px -10px color-mix(in oklab, var(--primary) 78%, transparent);
+}
+
+/* 旧的光环是无限循环动效，去掉 */
+.im-ai-launch .ai-launch-halo,
+.im-ai-launch .ai-launch-mark {
+  display: none;
+}
+
+.im-ai-orb__ico {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--primary-foreground);
+  transition:
+    opacity 220ms var(--ease-glide),
+    rotate 420ms var(--ease-spring),
+    scale 420ms var(--ease-spring);
+}
+
+.im-ai-orb__ico--plus {
+  opacity: 0;
+  rotate: -100deg;
+  scale: 0.55;
+}
+
+.im-ai-launch[aria-expanded='true'] .im-ai-orb__ico--plus {
+  opacity: 1;
+  rotate: 0deg;
+  scale: 1;
+}
+
+.im-ai-launch[aria-expanded='true'] .im-ai-orb__ico--spark {
+  opacity: 0;
+  rotate: 100deg;
+  scale: 0.55;
+}
+
+/* ------------------------------------------------------------
+   2. 右键「新建」菜单（玻璃胶囊，自下而上错峰入场）
+   ------------------------------------------------------------ */
+.im-ai-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.im-ai-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 42px;
+  /* 文字必须放得下：不换行 + 不给它压扁的机会，宽度由内容决定 */
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  font: 600 13.5px/1 var(--font-sans);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex: none;
+  max-width: calc(100vw - 40px);
+  color: var(--foreground);
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-lg), var(--glass-inset);
+  opacity: 0;
+  translate: 0 8px;
+  scale: 0.96;
+  transition:
+    background-color 80ms linear,
+    color 80ms linear,
+    scale 90ms var(--ease-ios);
+}
+
+/* 图标是 flex 子项，默认 min-width:auto 会被文字挤小；钉住它 */
+.im-ai-menu__item > svg {
+  flex: none;
+}
+
+.im-ai-menu__item > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.im-ai-menu[data-open='true'] {
+  pointer-events: auto;
+}
+
+.im-ai-menu[data-open='true'] .im-ai-menu__item {
+  animation: im-ai-menu-in 180ms var(--ease-ios) both;
+}
+
+.im-ai-menu[data-open='true'] .im-ai-menu__item:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.im-ai-menu[data-open='true'] .im-ai-menu__item:nth-child(2) {
+  animation-delay: 28ms;
+}
+
+.im-ai-menu[data-open='true'] .im-ai-menu__item:nth-child(3) {
+  animation-delay: 56ms;
+}
+
+@keyframes im-ai-menu-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+    scale: 0.96;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+.im-ai-menu__item:hover {
+  background: var(--surface);
+  color: var(--primary);
+}
+
+.im-ai-panel .ai-sheet-tab-name { max-width: 108px; }
+
+/* 手感反馈：右键菜单里的项点下去要有明确回落 */
+.im-ai-menu__item:active {
+  scale: 0.94;
+  transition-duration: 60ms;
+}
+
+/* ------------------------------------------------------------
+   3. 助手面板：一块玻璃 + a- 排版
+   ------------------------------------------------------------ */
+.ai-sheet.im-ai-panel {
+  border-radius: 24px;
+  color: var(--foreground);
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-2xl), var(--glass-inset);
+  min-height: 0;
+}
+
+/* ------------------------------------------------------------
+   3b. 溢出收口
+   ------------------------------------------------------------
+   长文件名 / 长回复 / 长会话名会把面板顶宽，实测会横向溢出。
+   这里统一给「会长内容」的容器开 min-width:0 + anywhere 换行。
+   ------------------------------------------------------------ */
+.im-ai-panel .ai-sheet-log,
+.im-ai-panel .ai-sheet-row,
+.im-ai-panel .ai-sheet-row > div,
+.im-ai-panel .ai-sheet-files > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.im-ai-panel .ai-sheet-log {
+  overflow-x: hidden;
+}
+.im-ai-panel .ai-sheet-row p,
+.im-ai-panel .ai-sheet-row .ai-sheet-bubble {
+  overflow-wrap: anywhere;
+}
+
+/* 扫描线是 NEBULA 遗留装饰，且是无限循环动效 */
+.im-ai-panel .ai-sheet-scan {
+  display: none;
+}
+
+.im-ai-panel .ai-sheet-kicker {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+
+.im-ai-panel .ai-sheet-title {
+  margin-top: 4px;
+  font: 650 19px/1.2 var(--font-sans);
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+}
+
+.im-ai-panel .ai-sheet-plus {
+  height: 30px;
+  padding: 0 13px;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  font: 550 12px/1 var(--font-sans);
+  letter-spacing: 0;
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--surface) 62%, transparent);
+  transition:
+    background-color 160ms var(--ease-glide),
+    border-color 160ms var(--ease-glide),
+    scale 160ms var(--ease-ios);
+}
+
+.im-ai-panel .ai-sheet-plus:hover {
+  filter: none;
+  border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  background: var(--surface);
+}
+
+.im-ai-panel .ai-sheet-plus:active {
+  scale: 0.95;
+}
+
+/* 会话胶囊 */
+.im-ai-panel .ai-sheet-tab {
+  height: 28px;
+  padding: 0 4px 0 11px;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  font: 500 12px/1 var(--font-sans);
+  color: var(--text-secondary);
+  background: color-mix(in oklab, var(--surface) 44%, transparent);
+  max-width: 132px;
+  min-width: 0;
+}
+.im-ai-panel .ai-sheet-tab-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.im-ai-panel .ai-sheet-tab-on {
+  color: var(--primary);
+  border-color: color-mix(in oklab, var(--primary) 32%, transparent);
+  background: var(--accent-soft);
+}
+
+.im-ai-panel .ai-sheet-tab-del {
+  color: var(--text-muted);
+}
+
+.im-ai-panel .ai-sheet-tab-del:hover {
+  color: var(--foreground);
+  background: var(--surface-hover);
+}
+
+/* 空态 */
+.im-ai-panel .ai-sheet-empty {
+  font: 400 13.5px/1.6 var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--text-muted);
+}
+
+/* 消息行 */
+.im-ai-panel .ai-sheet-who {
+  margin-bottom: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.im-ai-panel .ai-sheet-row p {
+  font: 400 13.5px/1.65 var(--font-sans);
+  color: var(--foreground);
+}
+
+.im-ai-panel .ai-sheet-row-user .ai-sheet-bubble {
+  max-width: 86%;
+  padding: 9px 13px;
+  border-radius: 18px 18px 6px 18px;
+  font: 400 13.5px/1.55 var(--font-sans);
+  color: var(--primary-foreground);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--primary) 84%, var(--primary-foreground)),
+    var(--primary)
+  );
+  box-shadow: 0 8px 20px -12px color-mix(in oklab, var(--primary) 85%, transparent);
+  text-align: start;
+}
+
+.im-ai-panel .ai-sheet-row-user .ai-sheet-bubble:hover {
+  color: var(--primary-foreground);
+  opacity: 0.94;
+}
+
+/* 助手回答：左侧一道竖线，不做气泡 */
+.im-ai-panel .ai-sheet-row-ai > div {
+  padding-left: 12px;
+  border-left: 2px solid color-mix(in oklab, var(--primary) 38%, transparent);
+}
+
+.im-ai-panel .ai-sheet-files {
+  gap: 9px;
+  margin-top: 11px;
+}
+
+/* 输入区 */
+.im-ai-panel .ai-sheet-form {
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: end;
+  margin: 12px 14px 14px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 22px;
+  background: color-mix(in oklab, var(--surface-secondary) 92%, transparent);
+  transition:
+    background-color 200ms var(--ease-glide),
+    border-color 200ms var(--ease-glide),
+    box-shadow 240ms var(--ease-glide);
+}
+
+.im-ai-panel .ai-sheet-form:focus-within {
+  background: var(--surface);
+  border-color: color-mix(in oklab, var(--primary) 42%, transparent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.im-ai-panel .ai-sheet-field {
+  min-height: 34px;
+  max-height: 104px;
+  padding: 8px 2px;
+  font: 400 13.5px/1.5 var(--font-sans);
+  color: var(--foreground);
+}
+
+.im-ai-panel .ai-sheet-field::placeholder {
+  color: var(--text-muted);
+}
+
+.im-ai-panel .ai-sheet-go,
+.im-ai-panel .ai-sheet-stop {
+  display: grid;
+  min-width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  font: 600 12.5px/1 var(--font-sans);
+  letter-spacing: 0;
+  color: var(--primary-foreground);
+  background: var(--primary);
+  box-shadow: 0 8px 18px -10px color-mix(in oklab, var(--primary) 85%, transparent);
+  transition:
+    scale 200ms var(--ease-spring),
+    opacity 200ms ease;
+}
+
+.im-ai-panel .ai-sheet-go:disabled {
+  opacity: 0.32;
+  box-shadow: none;
+}
+
+.im-ai-panel .ai-sheet-go:active,
+.im-ai-panel .ai-sheet-stop:active {
+  scale: 0.94;
+}
+
+.im-ai-panel .ai-sheet-stop {
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid var(--divider);
+  box-shadow: none;
+}
+
+/* 编辑态 */
+.im-ai-panel .ai-sheet-edit {
+  padding: 12px;
+  border: 1px solid var(--divider);
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--surface) 52%, transparent);
+}
+
+.im-ai-panel .ai-sheet-edit-field {
+  font: 400 13.5px/1.5 var(--font-sans);
+  color: var(--foreground);
+}
+
+.im-ai-panel .ai-sheet-edit-cancel {
+  border-radius: 999px;
+  color: var(--text-secondary);
+}
+
+/* 文件 / 备忘录胶囊 */
+.im-ai-panel .ai-sheet-files > * {
+  border-radius: 13px;
+  box-shadow: var(--shadow-xs);
+}
+
+/* ------------------------------------------------------------
+   4. 降低动效
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .ai-launch.im-ai-launch,
+  .im-ai-orb__ico,
+  .im-ai-menu__item,
+  .im-ai-menu[data-open='true'] .im-ai-menu__item,
+  .im-ai-panel .ai-sheet-plus,
+  .im-ai-panel .ai-sheet-form,
+  .im-ai-panel .ai-sheet-go,
+  .im-ai-panel .ai-sheet-stop {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

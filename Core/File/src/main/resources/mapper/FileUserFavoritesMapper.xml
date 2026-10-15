@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.file.mapper.FileUserFavoritesMapper">
+
+    <insert id="insertBatch">
+        INSERT INTO file_user_favorites (workspace_id, user_id, file_id, favorite_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.workspaceId}, #{item.userId}, #{item.fileId}, #{item.favoriteTime})
+        </foreach>
+    </insert>
+
+
+    <select id="selectByFileIdsAndUserId" resultType="com.xddcodec.fs.File.domain.FileUserFavorites">
+        SELECT *
+        FROM file_user_favorites
+        WHERE file_id IN
+        <foreach collection="fileIds" item="fileId" open="(" separator="," close=")">
+            #{fileId}
+        </foreach>
+          AND user_id = #{userId}
+    </select>
+
+    <delete id="deleteByFileIdsAndUserId">
+        DELETE FROM file_user_favorites
+        WHERE file_id IN
+        <foreach collection="fileIds" item="fileId" open="(" separator="," close=")">
+            #{fileId}
+        </foreach>
+          AND user_id = #{userId}
+    </delete>
+
+    <delete id="deleteByFileIds">
+        DELETE FROM file_user_favorites
+        WHERE file_id IN
+        <foreach collection="fileIds" item="fileId" open="(" separator="," close=")">
+            #{fileId}
+        </foreach>
+    </delete>
+
+    <select id="countFavorites" resultType="long">
+        SELECT COUNT(1)
+        FROM file_user_favorites fuf
+                 LEFT JOIN file_info fi ON fuf.file_id = fi.id
+        WHERE fuf.user_id = #{userId}
+          AND fuf.workspace_id = #{workspaceId}
+        <choose>
+            <when test="storagePlatformSettingId == null or storagePlatformSettingId == ''">
+                AND fi.storage_platform_setting_id IS NULL
+            </when>
+            <otherwise>
+                AND fi.storage_platform_setting_id = #{storagePlatformSettingId}
+            </otherwise>
+        </choose>
+          AND fi.is_deleted = 0
+    </select>
+</mapper>

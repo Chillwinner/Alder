@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.file.mapper.FileShareAccessRecordMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO file_share_access_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="shareId != null">share_id,</if>
+            <if test="accessIp != null">access_ip,</if>
+            <if test="accessAddress != null">access_address,</if>
+            <if test="browser != null">browser,</if>
+            <if test="os != null">os,</if>
+            <if test="accessTime != null">access_time,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="shareId != null">#{shareId},</if>
+            <if test="accessIp != null">#{accessIp},</if>
+            <if test="accessAddress != null">#{accessAddress},</if>
+            <if test="browser != null">#{browser},</if>
+            <if test="os != null">#{os},</if>
+            <if test="accessTime != null">#{accessTime},</if>
+        </trim>
+    </insert>
+</mapper>

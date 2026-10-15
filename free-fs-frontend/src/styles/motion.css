@@ -1,0 +1,182 @@
+/* ============================================================
+   NEBULA 页面编排动效层 motion.css
+   移植自 demo-html/motion.css，结合 free-fs-frontend 适配：
+   - 路由级联入场 moCascade（keyframes 供 page-motion.tsx 内联重放）
+   - 首页 Hero 粒子 canvas + 旋转描边 mo-hero-edge（motion-layer.ts 注入）
+   - 顶栏入场 mo-topbar、对话舱聚焦 mo-focus
+   新增类名统一 mo- 前缀；颜色仅引用 tokens（--hud / --primary）。
+   配套脚本：src/lib/motion-layer.ts、src/components/layout/page-motion.tsx
+   ============================================================ */
+
+/* ---- 1 · 路由级联入场。
+   ⚠️ 不再使用 filter: blur() —— blur 会让整页在加载期间发虚，
+      这是肉眼可见的「动效 bug」。demo 的入场只有位移 + 透明度。
+   ⚠️ 走 transform 而非 translate：translate 现在是悬停抬升的专用通道，
+      被 animation 占用时（fill 钉扎）会让卡片的回弹动画失效。
+      PressTilt 的指针跟随同样写 transform，但悬停时入场动画已被
+      [data-tilt]:hover { animation: none } 取消，两者不会打架。
+   page-motion.tsx 在 pathname 变化时以 inline animation 重放。---- */
+@keyframes moCascade {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- 2 · 环形/进度重放：项目内未发现 CSS 变量进度目标
+   （无 --p、无 style width 百分比动画；animated-circular-progress-bar
+   未被任何页面引用），按约定跳过，不硬造。---- */
+
+/* ---- 3 · 首页 Hero 粒子：NEBULA 遗留装饰，已停用。
+   它就是页头区域那些散落小点的来源，与 iOS 26 的克制方向冲突。
+   motion-layer.ts 仍会注入 canvas，这里直接隐藏（不动 JS）。---- */
+.mo-hero {
+  position: relative;
+}
+.mo-particles {
+  display: none !important;
+}
+
+/* ---- 4 · Hero 旋转 conic 描边：NEBULA 遗留，已停用。---- */
+.mo-hero-edge {
+  display: none !important;
+}
+/* ---- 6 · 揭示错峰：项目内没有 .reveal 类；入场由既有
+   art-card-pop + 本层 moCascade 级联承担，不引入新 reveal 类。---- */
+
+/* ---- 7 · 顶栏入场：motion-layer 在路由切换时对面包屑
+   重放 .mo-topbar（remove → reflow → add）。---- */
+.mo-topbar {
+  animation: moTopbar 0.5s var(--ease-out-expo) both;
+}
+@keyframes moTopbar {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- 8 · 对话舱聚焦：消息面板（sidebar 停靠 / popup 浮动）打开时，
+   主内容轻微缩小 + 压暗；停靠形态减弱幅度。
+   .mo-main-fx 过渡基类由 motion-layer 添加，同时保留
+   html.theme-ready main 的颜色过渡（特异性更高，不受覆盖）。---- */
+main[data-layout].mo-main-fx {
+  transition: opacity 0.2s ease-out;
+}
+main[data-layout].mo-focus {
+  opacity: 0.92;
+}
+main[data-layout].mo-focus.mo-focus--dock {
+  opacity: 0.96;
+}
+
+/* ---- 降低动效：显式降级（index.css 已有全局 0.01ms 兜底）---- */
+@media (prefers-reduced-motion: reduce) {
+  .mo-topbar,
+  .mo-hero-edge::before {
+    animation: none !important;
+  }
+  .mo-hero-edge {
+    opacity: 0.3;
+  }
+  main[data-layout].mo-main-fx {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   动效 v2 —— 质感来自"动作"而不是"材质"
+   ------------------------------------------------------------
+   原则：
+     · 主曲线 ease-out-expo（快进慢收）；只有"有重量的物体"才用弹簧
+       （弹窗从触发点长出来、气泡、拖拽落点）
+     · 只动 transform / opacity / translate / scale（不动布局、不用 blur）
+     · 每个动效都有 prefers-reduced-motion 降级
+   ============================================================ */
+
+/* ---- 弹窗：从下方轻轻"弹"出（替代 Radix 默认的纯 zoom-in-95） ---- */
+@keyframes mo-dialog-pop {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+[data-slot='dialog-content'][data-state='open']:not(.im-pod),
+[data-slot='alert-dialog-content'][data-state='open'] {
+  animation: mo-dialog-pop 420ms var(--ease-spring) both;
+}
+[data-slot='dialog-overlay'][data-state='open'],
+[data-slot='alert-dialog-overlay'][data-state='open'] {
+  animation-duration: 260ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+/* ---- 菜单/气泡：沿触发方向生长，时序更利落 ---- */
+[data-slot='dropdown-menu-content'][data-state='open'],
+[data-slot='popover-content'][data-state='open'],
+[data-slot='select-content'][data-state='open'] {
+  animation-duration: 200ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+/* ---- 列表行：悬停时背景从左向右"扫"进（轻量，只动 background-size） ---- */
+.mo-row {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  transition: background-size var(--motion-normal) var(--ease-out-expo);
+}
+.mo-row:hover {
+  background-size: 100% 100%;
+}
+
+/* ---- 数字滚动入场（AnimatedNumber 使用） ---- */
+.mo-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- 环境氛围：一层极慢、极淡的呼吸光（可选，data-ambient 开启） ----
+   不是玻璃折射用的光斑 —— 只是页面背景"有生命"。默认关闭。 */
+body[data-ambient='on']::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 20% 0%, color-mix(in oklab, var(--foreground) 5%, transparent), transparent 70%),
+    radial-gradient(50% 45% at 100% 100%, color-mix(in oklab, var(--foreground) 4%, transparent), transparent 70%);
+  animation: mo-ambient 18s ease-in-out infinite alternate;
+}
+@keyframes mo-ambient {
+  to {
+    opacity: 0.55;
+    scale: 1.08;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='dialog-content'][data-state='open'],
+  [data-slot='alert-dialog-content'][data-state='open'],
+  body[data-ambient='on']::before {
+    animation: none !important;
+  }
+  .mo-row {
+    transition: none;
+  }
+}

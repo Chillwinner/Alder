@@ -1,0 +1,28 @@
+Alder
+
+Copyright the Alder authors.
+
+This product includes software developed as Free-FS
+(https://github.com/dromara/free-fs, https://gitee.com/dromara/free-fs).
+
+Copyright the Free-FS authors and contributors, including the original
+work published by xddcode and the dromara community.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+The names "Free-FS", "dromara", and related marks identify that upstream
+project only. This license does not grant trademark rights in those names.
+Alder is not an official release of Free-FS, dromara, or xddcode.
+
+Third-party components under Utils/src/main/resources/static/lib/pdfjs
+keep their own license files.

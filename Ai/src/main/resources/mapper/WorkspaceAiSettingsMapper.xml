@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.ai.mapper.WorkspaceAiSettingsMapper">
+
+    <update id="ensureTable">
+        CREATE TABLE IF NOT EXISTS workspace_ai_settings
+        (
+            workspace_id  VARCHAR(32) PRIMARY KEY,
+            enabled       BOOLEAN      NOT NULL DEFAULT TRUE,
+            base_url      VARCHAR(500) NOT NULL DEFAULT 'https://api.deepseek.com',
+            model_name    VARCHAR(128) NOT NULL DEFAULT 'deepseek-flash',
+            api_key       TEXT,
+            custom_prompt TEXT,
+            updated_by    VARCHAR(32),
+            updated_at    TIMESTAMP    NOT NULL DEFAULT NOW()
+        )
+    </update>
+
+    <select id="selectByWorkspace" resultType="com.xddcodec.fs.ai.domain.WorkspaceAiSettings">
+        SELECT workspace_id  AS workspaceId,
+               enabled,
+               base_url      AS baseUrl,
+               model_name    AS modelName,
+               api_key       AS apiKey,
+               custom_prompt AS customPrompt,
+               updated_by    AS updatedBy,
+               updated_at    AS updatedAt
+        FROM workspace_ai_settings
+        WHERE workspace_id = #{workspaceId}
+    </select>
+
+    <insert id="upsert">
+        INSERT INTO workspace_ai_settings
+            (workspace_id, enabled, base_url, model_name, api_key, custom_prompt, updated_by, updated_at)
+        VALUES (#{workspaceId}, CAST(#{enabled} AS BOOLEAN), #{baseUrl}, #{modelName}, #{apiKey}, #{customPrompt}, #{updatedBy}, NOW())
+        ON CONFLICT (workspace_id) DO UPDATE SET
+            enabled       = EXCLUDED.enabled,
+            base_url      = EXCLUDED.base_url,
+            model_name    = EXCLUDED.model_name,
+            api_key       = EXCLUDED.api_key,
+            custom_prompt = EXCLUDED.custom_prompt,
+            updated_by    = EXCLUDED.updated_by,
+            updated_at    = NOW()
+    </insert>
+</mapper>

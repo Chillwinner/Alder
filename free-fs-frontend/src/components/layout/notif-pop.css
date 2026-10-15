@@ -1,0 +1,123 @@
+/* ============================================================
+   notif-pop.css — 顶栏通知弹层
+   ------------------------------------------------------------
+   之前这个弹层是「一堆 border 卡片直接堆在白色面板里」，
+   与主界面（玻璃 + 同心圆角 + token 色）完全两个语系。
+   这里把它收回同一套：
+     · 弹层本体 = 玻璃 + 圆角 24 + 大阴影
+     · 顶/底 = 分区头尾，中间列表独立滚动
+     · 分组 = 小标题（图标 + 名称）+ 卡片
+     · 条目 = 行式布局，hover 底色，右侧操作
+   覆盖方式：类名前缀 notif-pop，全部走 token，双主题自适应。
+   ============================================================ */
+
+/* 弹层本体（PopoverContent 自带 glass-overlay，这里只补圆角与内边距） */
+.notif-pop {
+  border-radius: var(--radius-xl) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+/* ---- 头部 ---- */
+.notif-pop__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.notif-pop__title {
+  font: 650 15px/1.25 var(--font-sans);
+  letter-spacing: -0.022em;
+  color: var(--foreground);
+}
+
+.notif-pop__sub {
+  margin-top: 3px;
+  font: 400 12px/1.4 var(--font-sans);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- 列表区：只这里滚动 ---- */
+.notif-pop__body {
+  max-height: min(24rem, 70vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px;
+}
+
+/* ---- 底部 ---- */
+.notif-pop__foot {
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--divider);
+}
+
+/* ---- 分组 ---- */
+.notif-pop__body > div > section + section {
+  margin-top: 16px;
+}
+
+/* 分组标题：把原来的 text-xs 灰字提升为可读的小标题 */
+.notif-pop__body section > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px 8px;
+  font: 600 12px/1 var(--font-sans);
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+}
+
+/* ---- 条目卡片：行式 + hover + 圆角同心（24 − 12 = 12 → 用 md） ---- */
+.notif-pop__body section li {
+  border-radius: var(--radius-md) !important;
+  border-color: var(--divider) !important;
+  background: color-mix(in oklab, var(--surface) 62%, transparent) !important;
+  padding: 11px 12px !important;
+  transition:
+    background-color 160ms var(--ease-glide),
+    border-color 160ms var(--ease-glide),
+    translate 220ms var(--ease-ios);
+}
+
+.notif-pop__body section li:hover {
+  background: var(--surface) !important;
+  border-color: color-mix(in oklab, var(--primary) 30%, transparent) !important;
+  translate: 0 -1px;
+}
+
+/* 有「消失」按钮的条目要留出右上角空间 */
+.notif-pop__body section li:has(> button[aria-label]) {
+  padding-right: 34px !important;
+}
+
+/* 条目里的主标题 / 元信息层级拉开 */
+.notif-pop__body section li p:first-of-type {
+  font: 600 13.5px/1.35 var(--font-sans);
+  letter-spacing: -0.012em;
+  color: var(--foreground);
+}
+
+.notif-pop__body section li p + p {
+  font: 400 12px/1.5 var(--font-sans);
+  color: var(--text-secondary);
+}
+
+/* 条目内的操作按钮：统一成胶囊 */
+.notif-pop__body section li button {
+  border-radius: 999px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notif-pop__body section li {
+    transition: none;
+  }
+  .notif-pop__body section li:hover {
+    translate: 0 0;
+  }
+}

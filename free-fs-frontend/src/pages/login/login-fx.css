@@ -1,0 +1,126 @@
+/*
+ * Alder — derivative of Free-FS (https://github.com/dromara/free-fs).
+ * Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
+ *
+ * 登录页动效层（页面局部，仅登录路由引入，不改 styles/*）：
+ * 区块级联入场 / kinetic 逐字标题 / 卡片内高光 / 聚焦辉光 / 主按钮微交互 / 右舷窗微光 drift。
+ * 只影响展示，不触碰表单逻辑。
+ */
+
+/* ===== 区块级联入场：复用全局 tech-rise 关键帧，delay 级进（最后一块 0.48s 起、0.88s 内收尾） ===== */
+.lfx-page .lfx-form > * {
+  animation: tech-rise 0.4s var(--ease-out-expo) both;
+}
+.lfx-page .lfx-form > *:nth-child(1) { animation-delay: 0.12s; }
+.lfx-page .lfx-form > *:nth-child(2) { animation-delay: 0.17s; }
+.lfx-page .lfx-form > *:nth-child(3) { animation-delay: 0.22s; }
+.lfx-page .lfx-form > *:nth-child(4) { animation-delay: 0.26s; }
+.lfx-page .lfx-form > *:nth-child(5) { animation-delay: 0.3s; }
+.lfx-page .lfx-form > *:nth-child(6) { animation-delay: 0.34s; }
+.lfx-page .lfx-form > *:nth-child(7) { animation-delay: 0.37s; }
+.lfx-page .lfx-form > *:nth-child(8) { animation-delay: 0.4s; }
+.lfx-page .lfx-form > *:nth-child(9) { animation-delay: 0.43s; }
+.lfx-page .lfx-form > *:nth-child(10) { animation-delay: 0.46s; }
+.lfx-page .lfx-form > *:nth-child(n + 11) { animation-delay: 0.48s; }
+
+/* ===== kinetic 标题：逐字上浮 + 去模糊（delay 由组件内联给定，≤0.42s 起） ===== */
+@keyframes lfx-char-in {
+  from {
+    opacity: 0;
+    translate: 0 0.55em;
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    filter: blur(0);
+  }
+}
+.lfx-page .lfx-char {
+  display: inline-block;
+  white-space: pre;
+  animation: lfx-char-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ===== 表单卡：静态内高光（低干扰），独立元素避免与 hud-corners 抢伪元素 ===== */
+.lfx-page .lfx-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--hud) 32%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--hud) 10%, transparent),
+    inset 0 20px 34px -34px color-mix(in oklab, var(--hud) 70%, transparent);
+}
+
+/* ===== 输入聚焦：延续既有 ring，叠青色辉光 ===== */
+.lfx-page .lfx-form input[data-slot='input']:focus-visible {
+  border-color: color-mix(in oklab, var(--hud) 55%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--hud) 20%, transparent),
+    0 0 18px -4px color-mix(in oklab, var(--hud) 45%, transparent);
+}
+
+/* ===== 主按钮：hover 上浮+辉光，active 回弹（纯 CSS） ===== */
+.lfx-page .lfx-btn-primary {
+  transition:
+    transform 0.18s var(--ease-out-expo),
+    box-shadow 0.18s var(--ease-out-expo),
+    background-color 0.15s var(--ease-out-expo),
+    color 0.15s var(--ease-out-expo);
+}
+.lfx-page .lfx-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 26px -12px color-mix(in oklab, var(--hud) 75%, transparent),
+    0 0 0 1px color-mix(in oklab, var(--hud) 35%, transparent),
+    0 0 22px -6px color-mix(in oklab, var(--hud) 50%, transparent);
+}
+.lfx-page .lfx-btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+  transition-duration: 60ms;
+}
+
+/* ===== 右舷窗：渐变内慢速微光 drift（页面底微光已由全局 body::before 覆盖，此处不重复） ===== */
+@keyframes lfx-drift {
+  from {
+    transform: translate3d(-2%, -1.5%, 0) scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: translate3d(2.5%, 2%, 0) scale(1.06);
+    opacity: 1;
+  }
+}
+.lfx-page .lfx-drift {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      closest-side at 30% 28%,
+      color-mix(in oklab, var(--hud) 15%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      closest-side at 72% 74%,
+      color-mix(in oklab, var(--primary) 13%, transparent),
+      transparent
+    );
+  animation: lfx-drift 26s ease-in-out infinite alternate;
+}
+
+/* ===== reduced-motion：全局降级之外的本页兜底（消掉 delay 造成的空窗） ===== */
+@media (prefers-reduced-motion: reduce) {
+  .lfx-page .lfx-form > *,
+  .lfx-page .lfx-char,
+  .lfx-page .tech-rise,
+  .lfx-page .lfx-drift {
+    animation: none !important;
+  }
+  .lfx-page .lfx-btn-primary:hover:not(:disabled) {
+    transform: none;
+  }
+}

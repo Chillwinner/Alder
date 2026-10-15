@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.conversation.mapper.ImFriendMapper">
+
+    <select id="selectPair" resultType="com.xddcodec.fs.conversation.domain.ImFriend">
+        SELECT user_id, friend_id, status, remark, created_at, updated_at
+        FROM im_friend
+        WHERE user_id = #{userId} AND friend_id = #{friendId}
+    </select>
+
+    <select id="listFriends" resultType="com.xddcodec.fs.conversation.domain.vo.ImFriendVO">
+        SELECT f.friend_id AS friendId,
+               u.username,
+               u.nickname,
+               u.avatar,
+               u.email,
+               f.remark,
+               f.status,
+               f.created_at AS createdAt
+        FROM im_friend f
+                 JOIN sys_user u ON u.id = f.friend_id
+        WHERE f.user_id = #{userId}
+          AND f.status = #{status}
+        ORDER BY f.updated_at DESC
+    </select>
+
+    <select id="listIncomingRequests" resultType="com.xddcodec.fs.conversation.domain.vo.ImFriendVO">
+        SELECT f.user_id AS friendId,
+               u.username,
+               u.nickname,
+               f.remark,
+               f.status,
+               f.created_at AS createdAt
+        FROM im_friend f
+                 JOIN sys_user u ON u.id = f.user_id
+        WHERE f.friend_id = #{userId}
+          AND f.status = 'pending'
+        ORDER BY f.created_at DESC
+    </select>
+
+    <select id="listRejectedRequests" resultType="com.xddcodec.fs.conversation.domain.vo.ImFriendVO">
+        SELECT f.user_id AS friendId,
+               u.username,
+               u.nickname,
+               f.remark,
+               f.status,
+               f.created_at AS createdAt
+        FROM im_friend f
+                 JOIN sys_user u ON u.id = f.user_id
+        WHERE f.friend_id = #{userId}
+          AND f.status = 'rejected'
+        ORDER BY f.updated_at DESC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO im_friend (user_id, friend_id, status, remark, created_at, updated_at)
+        VALUES (#{userId}, #{friendId}, #{status}, #{remark}, NOW(), NOW())
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE im_friend
+        SET status = #{status},
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+          AND friend_id = #{friendId}
+    </update>
+
+    <delete id="deletePair">
+        DELETE FROM im_friend
+        WHERE user_id = #{userId}
+          AND friend_id = #{friendId}
+    </delete>
+</mapper>

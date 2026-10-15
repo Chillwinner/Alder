@@ -1,0 +1,66 @@
+# 复制为 application-dev.yml 后再改本机值。application-dev.yml 不入库。
+spring:
+  devtools:
+    restart:
+      enabled: true
+      additional-paths:
+        - ../Common/target/classes
+        - ../Utils/target/classes
+        - ../Core/Log/target/classes
+        - ../Core/Storage/target/classes
+        - ../Core/System/target/classes
+        - ../Core/File/target/classes
+        - ../Ai/target/classes
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://127.0.0.1:5432/free-fs?reWriteBatchedInserts=true
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connectionTimeout: 30000
+      validationTimeout: 5000
+      idleTimeout: 600000
+      maxLifetime: 1800000
+      connectionTestQuery: SELECT 1
+      keepaliveTime: 30000
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 0
+      timeout: 10s
+      lettuce:
+        pool:
+          max-active: 200
+          max-wait: -1ms
+          max-idle: 10
+          min-idle: 0
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+      cache-null-values: true
+
+fs:
+  frontend:
+    domain: ${FS_FRONTEND_DOMAIN:http://localhost:5180}
+  ai:
+    embedding:
+      api-key: ${FS_AI_EMBEDDING_API_KEY:}
+    officecli:
+      remote-url: ${FS_AI_OFFICECLI_URL:http://127.0.0.1:8787}
+      token: ${FS_AI_OFFICECLI_TOKEN:}
+  storage:
+    local:
+      base-path: Common/src/main/java/com/xddcodec/fs/uploads
+      base-url: http://localhost:8080/files
+
+turn:
+  host: ${TURN_HOST:}
+  port: ${TURN_PORT:3478}
+  auth-secret: ${TURN_AUTH_SECRET:}
+  credential-ttl-seconds: 86400

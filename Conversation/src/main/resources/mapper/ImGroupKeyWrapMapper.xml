@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.conversation.mapper.ImGroupKeyWrapMapper">
+
+    <select id="selectForMember" resultType="com.xddcodec.fs.conversation.domain.ImGroupKeyWrap">
+        SELECT group_id, user_id, key_version, wrapped_key, updated_at
+        FROM im_group_key_wrap
+        WHERE group_id = #{groupId}
+          AND user_id = #{userId}
+    </select>
+
+    <select id="selectByGroup" resultType="com.xddcodec.fs.conversation.domain.ImGroupKeyWrap">
+        SELECT group_id, user_id, key_version, wrapped_key, updated_at
+        FROM im_group_key_wrap
+        WHERE group_id = #{groupId}
+    </select>
+
+    <insert id="upsert">
+        INSERT INTO im_group_key_wrap (group_id, user_id, key_version, wrapped_key, updated_at)
+        VALUES (#{groupId}, #{userId}, #{keyVersion}, #{wrappedKey}, NOW())
+        ON CONFLICT (group_id, user_id) DO UPDATE
+            SET key_version = EXCLUDED.key_version,
+                wrapped_key = EXCLUDED.wrapped_key,
+                updated_at  = NOW()
+    </insert>
+
+    <delete id="deleteByGroup">
+        DELETE FROM im_group_key_wrap WHERE group_id = #{groupId}
+    </delete>
+</mapper>

@@ -1,0 +1,128 @@
+/*
+ * Alder — derivative of Free-FS (https://github.com/dromara/free-fs).
+ * Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
+ *
+ * 备忘录页的空间栅格构图（对照 apple_spatial_bento.html 的右栏做法）。
+ *
+ * 这里只放**页面私有的版式**：
+ *   ① .board-inner-row  卡片列表项的「内层玻璃」hover（demo 的 .liquid-glass-inner:hover）
+ *   ② .board-column     列卡圆角 / 分隔线微调
+ *   ③ .board-new-memo   页头主按钮的胶囊化
+ *
+ * ⚠️ 全是视觉规则，不参与任何交互 / 状态 / 数据。
+ * ⚠️ 不写进 src/styles/**：那是 glass-core 的写范围，本页样式只在页面内闭环。
+ */
+
+/* ============================================================ 内层玻璃行 ==== */
+/*
+  demo 的 .liquid-glass-inner：
+    background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.03))
+    border: 1px solid rgba(255,255,255,.1)
+    hover 时白度各 +.02，并叠一层投影。
+  这里用主题令牌表达同一件事（明暗两套自动跟随）。
+*/
+.board-inner-row {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--surface) 92%, transparent),
+    color-mix(in oklab, var(--surface) 60%, transparent)
+  );
+}
+
+.board-inner-row:hover {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--surface) 100%, transparent),
+    color-mix(in oklab, var(--surface) 78%, transparent)
+  );
+}
+
+/* ============================================================ 列卡 ==== */
+/* demo 大卡底部有一条分隔线收口；列卡的高度与滚动由 TSX 的既有结构决定，这里只补收口线 */
+.board-column {
+  border: 1px solid var(--divider);
+}
+
+/* ============================================================ 页头主按钮 ==== */
+.board-new-memo {
+  border-radius: 999px;
+}
+
+.memo-wiki-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  max-width: 16rem;
+  margin: 0 0.15em;
+  padding: 0.08rem 0.62rem 0.08rem 0.42rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--divider));
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--primary) 14%, var(--surface)),
+    color-mix(in oklab, var(--surface) 88%, transparent)
+  );
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--surface) 55%, transparent) inset;
+  color: var(--primary);
+  font-size: 12.5px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: baseline;
+  cursor: pointer;
+}
+
+.memo-wiki-chip:hover {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--primary) 20%, var(--surface)),
+    color-mix(in oklab, var(--surface) 80%, transparent)
+  );
+}
+
+.memo-wiki-chip:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.memo-wiki-chip--gone,
+.memo-wiki-chip--gone:hover {
+  cursor: not-allowed;
+  color: var(--text-muted);
+  border-color: color-mix(in oklab, var(--text-muted) 28%, var(--divider));
+  background: color-mix(in oklab, var(--surface-secondary) 86%, transparent);
+  text-decoration: line-through;
+}
+
+.memo-wiki-chip-mark {
+  flex: none;
+  opacity: 0.55;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: -0.04em;
+}
+
+.memo-editor-scroll .tiptap,
+.memo-editor-scroll .ProseMirror {
+  min-height: 12rem;
+  height: auto;
+  overflow: visible;
+}
+
+.memo-prose [data-memo-mark='1'] {
+  background: color-mix(in oklab, var(--primary) 18%, transparent);
+  border-radius: 0.15em;
+  padding: 0 0.12em;
+}
+
+/* ============================================================ 降级 ==== */
+/*
+  prefers-reduced-motion：把卡片 hover 的位移抬升收掉，只保留颜色 / 描边反馈。
+*/
+@media (prefers-reduced-motion: reduce) {
+  .board-fileshare-row:hover {
+    transform: none;
+  }
+}

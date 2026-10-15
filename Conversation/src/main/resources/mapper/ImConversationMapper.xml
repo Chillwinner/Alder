@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.conversation.mapper.ImConversationMapper">
+
+    <select id="selectById" resultType="com.xddcodec.fs.conversation.domain.ImConversation">
+        SELECT id, conv_type, group_id, user_a_id, user_b_id, created_at
+        FROM im_conversation
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectSingle" resultType="com.xddcodec.fs.conversation.domain.ImConversation">
+        SELECT id, conv_type, group_id, user_a_id, user_b_id, created_at
+        FROM im_conversation
+        WHERE conv_type = 'single'
+          AND user_a_id = #{userAId}
+          AND user_b_id = #{userBId}
+    </select>
+
+    <select id="selectByGroupId" resultType="com.xddcodec.fs.conversation.domain.ImConversation">
+        SELECT id, conv_type, group_id, user_a_id, user_b_id, created_at
+        FROM im_conversation
+        WHERE conv_type = 'group'
+          AND group_id = #{groupId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO im_conversation (id, conv_type, group_id, user_a_id, user_b_id, created_at)
+        VALUES (#{id}, #{convType}, #{groupId}, #{userAId}, #{userBId}, NOW())
+    </insert>
+</mapper>

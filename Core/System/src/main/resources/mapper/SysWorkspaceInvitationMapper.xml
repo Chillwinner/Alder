@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.system.mapper.SysWorkspaceInvitationMapper">
+
+    <insert id="insert">
+        INSERT INTO sys_workspace_invitation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="workspaceId != null">workspace_id,</if>
+            <if test="email != null">email,</if>
+            <if test="roleId != null">role_id,</if>
+            <if test="invitedBy != null">invited_by,</if>
+            <if test="token != null">token,</if>
+            <if test="status != null">status,</if>
+            <if test="expiresAt != null">expires_at,</if>
+            <if test="acceptedAt != null">accepted_at,</if>
+            created_at,
+            updated_at,
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="workspaceId != null">#{workspaceId},</if>
+            <if test="email != null">#{email},</if>
+            <if test="roleId != null">#{roleId},</if>
+            <if test="invitedBy != null">#{invitedBy},</if>
+            <if test="token != null">#{token},</if>
+            <if test="status != null">#{status},</if>
+            <if test="expiresAt != null">#{expiresAt},</if>
+            <if test="acceptedAt != null">#{acceptedAt},</if>
+            now(),
+            now(),
+        </trim>
+    </insert>
+
+    <update id="updateById">
+        UPDATE sys_workspace_invitation
+        <set>
+            <if test="workspaceId != null">workspace_id = #{workspaceId},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="roleId != null">role_id = #{roleId},</if>
+            <if test="invitedBy != null">invited_by = #{invitedBy},</if>
+            <if test="token != null">token = #{token},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="expiresAt != null">expires_at = #{expiresAt},</if>
+            <if test="acceptedAt != null">accepted_at = #{acceptedAt},</if>
+            updated_at = now(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="selectByWorkspaceId" resultType="com.xddcodec.fs.System.domain.vo.WorkspaceInvitationVO">
+        SELECT i.*,
+               r.role_name AS roleName,
+               r.role_code AS roleCode,
+               u.nickname  AS invitedByName
+        FROM sys_workspace_invitation i
+                 LEFT JOIN sys_role r ON i.role_id = r.id
+                 LEFT JOIN sys_user u ON i.invited_by = u.id
+        WHERE i.workspace_id = #{workspaceId}
+          AND i.status IN (0, 1)
+        ORDER BY i.created_at DESC
+    </select>
+
+    <select id="selectDetailByToken" resultType="com.xddcodec.fs.System.domain.SysWorkspaceInvitation">
+        SELECT i.*,
+               w.name     AS workspaceName,
+               r.role_name AS roleName,
+               r.role_code AS roleCode,
+               u.nickname AS inviterName
+        FROM sys_workspace_invitation i
+                 LEFT JOIN sys_workspace w ON i.workspace_id = w.id
+                 LEFT JOIN sys_role r ON i.role_id = r.id
+                 LEFT JOIN sys_user u ON i.invited_by = u.id
+        WHERE i.token = #{token}
+    </select>
+
+    <select id="selectPendingDetailsByEmail" resultType="com.xddcodec.fs.System.domain.SysWorkspaceInvitation">
+        SELECT i.*,
+               w.name      AS workspaceName,
+               r.role_name AS roleName,
+               r.role_code AS roleCode,
+               u.nickname  AS inviterName
+        FROM sys_workspace_invitation i
+                 LEFT JOIN sys_workspace w ON i.workspace_id = w.id
+                 LEFT JOIN sys_role r ON i.role_id = r.id
+                 LEFT JOIN sys_user u ON i.invited_by = u.id
+        WHERE LOWER(i.email) = LOWER(#{email})
+          AND i.status = 0
+          AND i.expires_at &gt; NOW()
+        ORDER BY i.created_at DESC
+    </select>
+</mapper>

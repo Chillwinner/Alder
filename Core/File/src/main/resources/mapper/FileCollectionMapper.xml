@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.file.mapper.FileCollectionMapper">
+
+    <insert id="insert">
+        INSERT INTO file_collections
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="workspaceId != null">workspace_id,</if>
+            <if test="targetFolderId != null">target_folder_id,</if>
+            <if test="storagePlatformSettingId != null">storage_platform_setting_id,</if>
+            <if test="collectionName != null">collection_name,</if>
+            <if test="description != null">description,</if>
+            <if test="accessCodeHash != null">access_code_hash,</if>
+            <if test="expireTime != null">expire_time,</if>
+            <if test="maxFileSize != null">max_file_size,</if>
+            <if test="allowedExtensions != null">allowed_extensions,</if>
+            <if test="assigneeUserIds != null">assignee_user_ids,</if>
+            <if test="status != null">status,</if>
+            <if test="submissionCount != null">submission_count,</if>
+            <if test="fileCount != null">file_count,</if>
+            <if test="totalSize != null">total_size,</if>
+            created_at,
+            updated_at,
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="workspaceId != null">#{workspaceId},</if>
+            <if test="targetFolderId != null">#{targetFolderId},</if>
+            <if test="storagePlatformSettingId != null">#{storagePlatformSettingId},</if>
+            <if test="collectionName != null">#{collectionName},</if>
+            <if test="description != null">#{description},</if>
+            <if test="accessCodeHash != null">#{accessCodeHash},</if>
+            <if test="expireTime != null">#{expireTime},</if>
+            <if test="maxFileSize != null">#{maxFileSize},</if>
+            <if test="allowedExtensions != null">#{allowedExtensions},</if>
+            <if test="assigneeUserIds != null">#{assigneeUserIds},</if>
+            <if test="status != null">#{status},</if>
+            <if test="submissionCount != null">#{submissionCount},</if>
+            <if test="fileCount != null">#{fileCount},</if>
+            <if test="totalSize != null">#{totalSize},</if>
+            now(),
+            now(),
+        </trim>
+    </insert>
+
+    <update id="updateById">
+        UPDATE file_collections
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="workspaceId != null">workspace_id = #{workspaceId},</if>
+            <if test="targetFolderId != null">target_folder_id = #{targetFolderId},</if>
+            <if test="storagePlatformSettingId != null">storage_platform_setting_id = #{storagePlatformSettingId},</if>
+            <if test="collectionName != null">collection_name = #{collectionName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="accessCodeHash != null">access_code_hash = #{accessCodeHash},</if>
+            <if test="expireTime != null">expire_time = #{expireTime},</if>
+            <if test="maxFileSize != null">max_file_size = #{maxFileSize},</if>
+            <if test="allowedExtensions != null">allowed_extensions = #{allowedExtensions},</if>
+            <if test="assigneeUserIds != null">assignee_user_ids = #{assigneeUserIds},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="submissionCount != null">submission_count = #{submissionCount},</if>
+            <if test="fileCount != null">file_count = #{fileCount},</if>
+            <if test="totalSize != null">total_size = #{totalSize},</if>
+            updated_at = now(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="selectPage" resultType="com.xddcodec.fs.File.domain.FileCollection">
+        SELECT *
+        FROM file_collections
+        WHERE workspace_id = #{workspaceId}
+        <if test="keyword != null and keyword != ''">
+            AND (collection_name LIKE '%' || #{keyword} || '%'
+                OR description LIKE '%' || #{keyword} || '%')
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <choose>
+            <when test="orderBy == 'collection_name' and isAsc == true">ORDER BY collection_name ASC, id DESC</when>
+            <when test="orderBy == 'collection_name' and isAsc != true">ORDER BY collection_name DESC, id DESC</when>
+            <when test="orderBy == 'expire_time' and isAsc == true">ORDER BY expire_time ASC, id DESC</when>
+            <when test="orderBy == 'expire_time' and isAsc != true">ORDER BY expire_time DESC, id DESC</when>
+            <when test="orderBy == 'submission_count' and isAsc == true">ORDER BY submission_count ASC, id DESC</when>
+            <when test="orderBy == 'submission_count' and isAsc != true">ORDER BY submission_count DESC, id DESC</when>
+            <when test="orderBy == 'file_count' and isAsc == true">ORDER BY file_count ASC, id DESC</when>
+            <when test="orderBy == 'file_count' and isAsc != true">ORDER BY file_count DESC, id DESC</when>
+            <when test="orderBy == 'total_size' and isAsc == true">ORDER BY total_size ASC, id DESC</when>
+            <when test="orderBy == 'total_size' and isAsc != true">ORDER BY total_size DESC, id DESC</when>
+            <when test="isAsc == true">ORDER BY created_at ASC, id DESC</when>
+            <otherwise>ORDER BY created_at DESC, id DESC</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectAssigned" resultType="com.xddcodec.fs.File.domain.FileCollection">
+        SELECT *
+        FROM file_collections
+        WHERE workspace_id = #{workspaceId}
+          AND status = 'OPEN'
+          AND (expire_time IS NULL OR expire_time > NOW())
+          AND assignee_user_ids IS NOT NULL
+          AND (
+            assignee_user_ids = #{userId}
+            OR assignee_user_ids LIKE #{userId} || ',%'
+            OR assignee_user_ids LIKE '%,' || #{userId}
+            OR assignee_user_ids LIKE '%,' || #{userId} || ',%'
+            )
+        ORDER BY created_at DESC
+        LIMIT 20
+    </select>
+</mapper>

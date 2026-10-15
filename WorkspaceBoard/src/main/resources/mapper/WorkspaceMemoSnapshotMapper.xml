@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.workspaceboard.mapper.WorkspaceMemoSnapshotMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO workspace_memo_snapshot (memo_id, yjs_state, content_hash, commit_message, saved_at)
+        VALUES (#{memoId}, #{yjsState}, #{contentHash}, #{commitMessage}, NOW())
+    </insert>
+
+    <select id="selectLatest" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemoSnapshot">
+        SELECT *
+        FROM workspace_memo_snapshot
+        WHERE memo_id = #{memoId}
+        ORDER BY saved_at DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectLatestCommit" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemoSnapshot">
+        SELECT *
+        FROM workspace_memo_snapshot
+        WHERE memo_id = #{memoId}
+          AND commit_message IS NOT NULL
+          AND commit_message &lt;&gt; ''
+        ORDER BY saved_at DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectList" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemoSnapshot">
+        SELECT id, memo_id, content_hash, commit_message, saved_at
+        FROM workspace_memo_snapshot
+        WHERE memo_id = #{memoId}
+          AND commit_message IS NOT NULL
+          AND commit_message &lt;&gt; ''
+        ORDER BY saved_at DESC
+        LIMIT 40
+    </select>
+
+    <select id="selectById" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemoSnapshot">
+        SELECT *
+        FROM workspace_memo_snapshot
+        WHERE id = #{id}
+    </select>
+</mapper>

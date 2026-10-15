@@ -1,0 +1,44 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+.pnpm-store
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables（只保留 .env.example）
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+.cursor
+
+# QA 验收产物（截图脚本 .qa/*.cjs 与参考基准 .qa/ref/ 保留，只忽略大体积截图）
+.qa/**/*.png
+.qa/**/*.jpg
+.qa/**/*.jpeg
+
+# 构建与依赖缓存
+*.tsbuildinfo
+.vite
+.cache

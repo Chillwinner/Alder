@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.ai.mapper.WorkspaceAiReminderMapper">
+
+    <insert id="insert">
+        INSERT INTO workspace_ai_reminder
+        (id, workspace_id, user_id, message, kind, hour, minute, once_date, weekdays,
+         biweek_parity, anchor_monday, enabled, next_fire_at)
+        VALUES (#{id}, #{workspaceId}, #{userId}, #{message}, #{kind}, #{hour}, #{minute},
+                #{onceDate}, #{weekdays}, #{biweekParity}, #{anchorMonday},
+                CAST(#{enabled} AS BOOLEAN), #{nextFireAt})
+    </insert>
+
+    <select id="selectByUserInWorkspace" resultType="com.xddcodec.fs.ai.domain.WorkspaceAiReminder">
+        SELECT id,
+               workspace_id  AS workspaceId,
+               user_id       AS userId,
+               message,
+               kind,
+               hour,
+               minute,
+               once_date     AS onceDate,
+               weekdays,
+               biweek_parity AS biweekParity,
+               anchor_monday AS anchorMonday,
+               enabled,
+               next_fire_at  AS nextFireAt
+        FROM workspace_ai_reminder
+        WHERE workspace_id = #{workspaceId}
+          AND user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectById" resultType="com.xddcodec.fs.ai.domain.WorkspaceAiReminder">
+        SELECT id,
+               workspace_id  AS workspaceId,
+               user_id       AS userId,
+               message,
+               kind,
+               hour,
+               minute,
+               once_date     AS onceDate,
+               weekdays,
+               biweek_parity AS biweekParity,
+               anchor_monday AS anchorMonday,
+               enabled,
+               next_fire_at  AS nextFireAt
+        FROM workspace_ai_reminder
+        WHERE id = #{id}
+    </select>
+
+    <update id="disable">
+        UPDATE workspace_ai_reminder
+        SET enabled = FALSE,
+            next_fire_at = NULL
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </update>
+
+    <select id="selectDue" resultType="com.xddcodec.fs.ai.domain.WorkspaceAiReminder">
+        SELECT id,
+               workspace_id  AS workspaceId,
+               user_id       AS userId,
+               message,
+               kind,
+               hour,
+               minute,
+               once_date     AS onceDate,
+               weekdays,
+               biweek_parity AS biweekParity,
+               anchor_monday AS anchorMonday,
+               enabled,
+               next_fire_at  AS nextFireAt
+        FROM workspace_ai_reminder
+        WHERE enabled = TRUE
+          AND next_fire_at IS NOT NULL
+          AND next_fire_at &lt;= #{now}
+        LIMIT 80
+    </select>
+
+    <update id="claimFire">
+        UPDATE workspace_ai_reminder
+        SET next_fire_at = #{nextFireAt},
+            enabled      = CAST(#{enabled} AS BOOLEAN)
+        WHERE id = #{id}
+          AND enabled = TRUE
+          AND next_fire_at IS NOT NULL
+          AND next_fire_at &lt;= #{now}
+    </update>
+
+    <insert id="insertInbox">
+        INSERT INTO workspace_ai_reminder_inbox
+            (id, reminder_id, workspace_id, user_id, message, fired_at, dismissed)
+        VALUES (#{id}, #{reminderId}, #{workspaceId}, #{userId}, #{message}, #{firedAt}, FALSE)
+    </insert>
+
+    <select id="selectOpenInbox" resultType="com.xddcodec.fs.ai.domain.WorkspaceAiReminderInbox">
+        SELECT i.id,
+               i.reminder_id  AS reminderId,
+               i.workspace_id AS workspaceId,
+               w.name         AS workspaceName,
+               i.user_id      AS userId,
+               i.message,
+               i.fired_at     AS firedAt,
+               i.dismissed
+        FROM workspace_ai_reminder_inbox i
+                 LEFT JOIN sys_workspace w ON w.id = i.workspace_id
+        WHERE i.user_id = #{userId}
+          AND i.dismissed = FALSE
+        ORDER BY i.fired_at DESC
+        LIMIT 50
+    </select>
+
+    <update id="dismissInbox">
+        UPDATE workspace_ai_reminder_inbox
+        SET dismissed = TRUE
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </update>
+</mapper>

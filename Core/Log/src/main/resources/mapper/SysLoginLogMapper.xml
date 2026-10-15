@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.log.mapper.SysLoginLogMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_login_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="username != null">username,</if>
+            <if test="loginIp != null">login_ip,</if>
+            <if test="loginAddress != null">login_address,</if>
+            <if test="loginType != null">login_type,</if>
+            <if test="browser != null">browser,</if>
+            <if test="os != null">os,</if>
+            <if test="status != null">status,</if>
+            <if test="msg != null">msg,</if>
+            <if test="loginTime != null">login_time,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="username != null">#{username},</if>
+            <if test="loginIp != null">#{loginIp},</if>
+            <if test="loginAddress != null">#{loginAddress},</if>
+            <if test="loginType != null">#{loginType},</if>
+            <if test="browser != null">#{browser},</if>
+            <if test="os != null">#{os},</if>
+            <if test="status != null">#{status},</if>
+            <if test="msg != null">#{msg},</if>
+            <if test="loginTime != null">#{loginTime},</if>
+        </trim>
+    </insert>
+
+
+    <select id="selectPage" resultType="com.xddcodec.fs.Log.domain.SysLoginLog">
+        SELECT *
+        FROM sys_login_log
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    username LIKE '%' || #{keyword} || '%'
+                    OR login_ip LIKE '%' || #{keyword} || '%'
+                    OR login_address LIKE '%' || #{keyword} || '%'
+                    OR browser LIKE '%' || #{keyword} || '%'
+                    OR os LIKE '%' || #{keyword} || '%'
+                    OR msg LIKE '%' || #{keyword} || '%'
+                )
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY login_time DESC
+    </select>
+</mapper>

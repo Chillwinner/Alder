@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.conversation.mapper.ImUserSearchMapper">
+
+    <select id="search" resultType="com.xddcodec.fs.conversation.domain.vo.ImUserSearchVO">
+        SELECT u.id,
+               u.username,
+               u.nickname,
+               u.avatar,
+               u.email,
+               f.status AS friendStatus
+        FROM sys_user u
+                 LEFT JOIN im_friend f ON f.user_id = #{userId} AND f.friend_id = u.id
+        WHERE u.id != #{userId}
+          AND (u.status IS NULL OR u.status = 0)
+          AND (
+            LOWER(u.username) LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+                OR LOWER(u.email) LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+            )
+        ORDER BY CASE
+                     WHEN LOWER(u.username) = LOWER(#{keyword}) OR LOWER(u.email) = LOWER(#{keyword}) THEN 0
+                     ELSE 1 END,
+                 u.username
+        LIMIT 20
+    </select>
+</mapper>

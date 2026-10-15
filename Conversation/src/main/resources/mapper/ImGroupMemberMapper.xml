@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.conversation.mapper.ImGroupMemberMapper">
+
+    <select id="selectMember" resultType="com.xddcodec.fs.conversation.domain.ImGroupMember">
+        SELECT group_id, user_id, role, group_nickname, joined_at, muted_until
+        FROM im_group_member
+        WHERE group_id = #{groupId}
+          AND user_id = #{userId}
+    </select>
+
+    <select id="listByGroupId" resultType="com.xddcodec.fs.conversation.domain.ImGroupMember">
+        SELECT group_id, user_id, role, group_nickname, joined_at, muted_until
+        FROM im_group_member
+        WHERE group_id = #{groupId}
+        ORDER BY joined_at ASC
+    </select>
+
+    <select id="listUserIds" resultType="java.lang.String">
+        SELECT user_id
+        FROM im_group_member
+        WHERE group_id = #{groupId}
+    </select>
+
+    <select id="countByGroupId" resultType="int">
+        SELECT COUNT(*)
+        FROM im_group_member
+        WHERE group_id = #{groupId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO im_group_member (group_id, user_id, role, group_nickname, joined_at)
+        VALUES (#{groupId}, #{userId}, #{role}, #{groupNickname}, NOW())
+    </insert>
+
+    <delete id="deleteMember">
+        DELETE FROM im_group_member
+        WHERE group_id = #{groupId}
+          AND user_id = #{userId}
+    </delete>
+
+    <update id="updateRole">
+        UPDATE im_group_member
+        SET role = #{role}
+        WHERE group_id = #{groupId}
+          AND user_id = #{userId}
+    </update>
+
+    <select id="listMembers" resultType="com.xddcodec.fs.conversation.domain.vo.ImGroupMemberVO">
+        SELECT m.user_id AS userId,
+               u.username,
+               u.nickname,
+               u.avatar,
+               m.role,
+               m.group_nickname AS groupNickname,
+               m.joined_at AS joinedAt,
+               f.status AS friendStatus
+        FROM im_group_member m
+                 JOIN sys_user u ON u.id = m.user_id
+                 LEFT JOIN im_friend f ON f.user_id = #{viewerUserId} AND f.friend_id = m.user_id
+        WHERE m.group_id = #{groupId}
+        ORDER BY CASE WHEN m.role = 'owner' THEN 0 WHEN m.role = 'admin' THEN 1 ELSE 2 END,
+                 m.joined_at ASC
+    </select>
+</mapper>

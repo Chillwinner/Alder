@@ -1,0 +1,168 @@
+# 复制为 application.yml 后再改本机值。application.yml 不入库。
+server:
+  port: 8080
+  tomcat:
+    threads:
+      min-spare: 50
+      max: 200
+    max-connections: 10000
+spring:
+  application:
+    name: free-fs
+  profiles:
+    active: dev
+  mvc:
+    async:
+      request-timeout: 360s
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+  web:
+    resources:
+      static-locations:
+        - classpath:/META-INF/resources/
+        - classpath:/resources/
+        - classpath:/static/
+        - classpath:/public/
+        - classpath:/.well-known/
+  main:
+    allow-circular-references: true
+    keep-alive: true
+  threads:
+    virtual:
+      enabled: true
+
+  mail:
+    enable: false
+    host: smtp.example.com
+    default-encoding: UTF-8
+    username: mail@example.com
+    form: Alder <mail@example.com>
+    password: your-smtp-password
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+--- # mybatis配置
+mybatis:
+  type-aliases-package: com.xddcodec.fs.*.domain
+  type-handlers-package: com.xddcodec.fs.type
+  mapper-locations: classpath*:mapper/*Mapper.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    auto-mapping-behavior: FULL
+    auto-mapping-unknown-column-behavior: NONE
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+    cache-enabled: true
+
+pagehelper:
+  helper-dialect: postgresql
+  reasonable: true
+  support-methods-arguments: true
+
+--- # 认证授权相关配置
+security:
+  auth-cookie:
+    secure: ${AUTH_COOKIE_SECURE:false}
+    same-site: ${AUTH_COOKIE_SAME_SITE:Strict}
+  path-pattern: /apis/**
+  excludes:
+    - /apis/auth/login
+    - /apis/auth/login/**
+    - /apis/transfer/sse
+    - /apis/user/register
+    - /apis/user/forget-password/code/**
+    - /apis/user/forget-password
+    - /apis/invitation/verify/**
+    - /apis/share/**/items
+    - /apis/share/verify/code
+    - /apis/share/**/info
+    - /apis/share/**/download/**
+    - /apis/share/**/content/**
+    - /apis/share/**/url/**
+    - /apis/share/**/folder-download/**
+    - /apis/file-collections/public/**
+    - /ws/conversation/**
+    - /ws/workspace-board/**
+    - /ws/meeting/**
+    - /dav/**
+    - /webdav-test/**
+
+--- #Sa-Token 配置
+sa-token:
+  token-name: Authorization
+  token-prefix: Bearer
+  cookie-auto-fill-prefix: true
+  timeout: 86400
+  active-timeout: 3600
+  is-concurrent: false
+  is-share: false
+  is-read-body: true
+  token-style: random-128
+  is-log: true
+  cookie:
+    http-only: true
+    secure: ${AUTH_COOKIE_SECURE:false}
+    same-site: ${AUTH_COOKIE_SAME_SITE:Strict}
+  jwt-secret-key: change-me-to-a-long-random-string
+
+--- #接口文档 配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+    enable-swagger-models: true
+    swagger-model-name: 实体类列表
+
+fs:
+  cors:
+    allowed-origins: ${FS_CORS_ALLOWED_ORIGINS:http://localhost,http://127.0.0.1,http://localhost:5180,http://127.0.0.1:5180}
+  status-enabled: 1
+  status-disabled: 0
+  header-workspace-id: X-Workspace-Id
+  header-storage-platform-config-id: X-Storage-Platform-Config-Id
+  verify-code-length: 6
+  verify-code-expire-seconds: 300
+  verify-code-send-interval-seconds: 60
+  chat-save-path: /Chat
+  avatar-save-path: /Chat/user
+  redis-prefix: fs
+  ai:
+    embedding:
+      base-url: ${FS_AI_EMBEDDING_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+      model: ${FS_AI_EMBEDDING_MODEL:text-embedding-v3}
+      api-key: ${FS_AI_EMBEDDING_API_KEY:}
+      dimensions: 1024
+    officecli:
+      enabled: true
+      binary: ${FS_AI_OFFICECLI_BIN:officecli}
+      remote-url: ${FS_AI_OFFICECLI_URL:}
+      token: ${FS_AI_OFFICECLI_TOKEN:}
+      timeout-seconds: 90
+
+--- # 会议 WebRTC
+turn:
+  host: ${TURN_HOST:}
+  port: ${TURN_PORT:3478}
+  auth-secret: ${TURN_AUTH_SECRET:}
+  credential-ttl-seconds: ${TURN_CREDENTIAL_TTL:86400}

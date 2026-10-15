@@ -1,0 +1,63 @@
+# 本机工作站：浏览器打开 http://localhost
+# 首次：docker compose up -d --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: free-fs
+      POSTGRES_USER: alder
+      POSTGRES_PASSWORD: alder
+    volumes:
+      - alder-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alder -d free-fs"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/free-fs?reWriteBatchedInserts=true
+      SPRING_DATASOURCE_USERNAME: alder
+      SPRING_DATASOURCE_PASSWORD: alder
+      SPRING_DATA_REDIS_HOST: redis
+      FS_FRONTEND_DOMAIN: http://localhost
+      FS_CORS_ALLOWED_ORIGINS: http://localhost,http://127.0.0.1
+      FS_LOCAL_BASE_URL: http://localhost/files
+    volumes:
+      - alder-files:/data/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  web:
+    build:
+      context: ./free-fs-frontend
+      dockerfile: docker/Dockerfile
+    environment:
+      API_BASE_URL: http://gateway:8080
+    depends_on:
+      - gateway
+    ports:
+      - "80:80"
+
+volumes:
+  alder-pg:
+  alder-files:

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.progress.mapper.ProgressTaskMapper">
+
+    <insert id="insert">
+        INSERT INTO progress_task (id, workspace_id, title, description, kind, status, progress, due_at, note,
+                                   created_by, created_at, updated_at)
+        VALUES (#{id}, #{workspaceId}, #{title}, #{description}, #{kind}, #{status}, #{progress}, #{dueAt}, #{note},
+                #{createdBy}, NOW(), NOW())
+    </insert>
+
+    <select id="selectById" resultType="com.xddcodec.fs.progress.domain.ProgressTask">
+        SELECT *
+        FROM progress_task
+        WHERE id = #{id}
+    </select>
+
+    <select id="list" resultType="com.xddcodec.fs.progress.domain.ProgressTask">
+        SELECT t.*
+        FROM progress_task t
+        <if test="mineUserId != null and mineUserId != ''">
+            INNER JOIN progress_assignee a ON a.task_id = t.id AND a.user_id = #{mineUserId}
+        </if>
+        WHERE t.workspace_id = #{workspaceId}
+        <if test="kind != null and kind != ''">
+            AND t.kind = #{kind}
+        </if>
+        <if test="status != null and status != ''">
+            AND t.status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND t.title ILIKE '%' || #{keyword} || '%'
+        </if>
+        <if test="onDate != null">
+            AND (
+                EXISTS (
+                    SELECT 1 FROM progress_submission s
+                    WHERE s.task_id = t.id
+                      AND COALESCE(s.day, CAST(s.created_at AS DATE)) = #{onDate}
+                )
+                <if test="includeOpen">
+                    OR t.status NOT IN ('DONE')
+                </if>
+            )
+        </if>
+        ORDER BY t.created_at DESC
+    </select>
+
+    <update id="updateTask">
+        UPDATE progress_task
+        SET title       = #{title},
+            description = #{description},
+            kind        = #{kind},
+            status      = #{status},
+            progress    = #{progress},
+            due_at      = #{dueAt},
+            note        = #{note},
+            updated_at  = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteSubmissionFiles">
+        DELETE FROM progress_submission_file
+        WHERE submission_id IN (SELECT id FROM progress_submission WHERE task_id = #{id})
+    </delete>
+
+    <delete id="deleteSubmissions">
+        DELETE FROM progress_submission WHERE task_id = #{id}
+    </delete>
+
+    <delete id="deleteAssignees">
+        DELETE FROM progress_assignee WHERE task_id = #{id}
+    </delete>
+
+    <delete id="deleteById">
+        DELETE FROM progress_task WHERE id = #{id}
+    </delete>
+
+    <insert id="insertAssignee">
+        INSERT INTO progress_assignee (task_id, user_id)
+        VALUES (#{taskId}, #{userId})
+        ON CONFLICT DO NOTHING
+    </insert>
+
+    <select id="listAssigneeIds" resultType="java.lang.String">
+        SELECT user_id
+        FROM progress_assignee
+        WHERE task_id = #{taskId}
+    </select>
+
+    <select id="listTodayDailyTaskIds" resultType="java.lang.String">
+        SELECT DISTINCT task_id
+        FROM progress_submission
+        WHERE day = #{day}
+          AND task_id IN (SELECT id FROM progress_task WHERE workspace_id = #{workspaceId} AND kind = 'DAILY')
+    </select>
+</mapper>

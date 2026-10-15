@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.xddcodec.fs</groupId>
+        <artifactId>Core</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <artifactId>System</artifactId>
+
+    <description>
+        System - 系统管理模块，负责用户、角色、权限等系统管理功能
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.xddcodec.fs</groupId>
+            <artifactId>Common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.xddcodec.fs</groupId>
+            <artifactId>Log</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.xddcodec.fs</groupId>
+            <artifactId>Utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.xddcodec.fs</groupId>
+            <artifactId>Storage</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

@@ -1,0 +1,118 @@
+/*
+ * Alder — derivative of Free-FS (https://github.com/dromara/free-fs).
+ * Licensed under the Apache License, Version 2.0. See LICENSE and NOTICE.
+ *
+ * 文件页的空间栅格构图（对照 apple_spatial_bento.html 的「空间资产库」）。
+ *
+ * 这里只放**页面私有的版式**：
+ *   ① .fs-grid      12 列空间栅格：树 3 列 / 内容 9 列（详情为悬浮层，不占列）
+ *   ② .fs-cardhead  demo 的卡头分隔线（pb-4 + border-b）
+ *   ③ .fs-chip      卡片右上的 mono 胶囊（demo 的 asset.size）
+ *   ④ .a-fcard__arrow  卡片右下那个 hover 才出现的箭头
+ *
+ * ⚠️ 全部是**视觉**规则，不参与任何交互 / 状态 / 数据。事件契约在 TSX 里没动。
+ * ⚠️ 不写进 src/styles/**：那是 glass-core 的写范围，本页样式只在页面内闭环。
+ */
+
+/* ============================================================ 12 列栅格 ==== */
+.fs-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.fs-grid > .fs-tree {
+  grid-column: span 3;
+}
+
+.fs-grid > .fs-content {
+  grid-column: span 9;
+}
+
+@media (max-width: 1023px) {
+  .fs-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fs-grid > .fs-tree,
+  .fs-grid > .fs-content {
+    grid-column: span 1;
+  }
+}
+
+/* ============================================================ 卡头 ==== */
+/*
+  demo：大卡顶部行用一条 1px 分隔线与内容区隔开（pb-4 border-b border-white/10）。
+  文件页的工具条同理，但改成浅色令牌，明暗两套都由 --divider 供值。
+*/
+.fs-cardhead {
+  border-bottom: 1px solid var(--divider);
+}
+
+/* ============================================================ 卡片右上胶囊 ==== */
+/* demo 的 asset.size：10px mono 胶囊，仅描边，不抢标题 */
+.fs-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  background: var(--surface-secondary);
+  font: 500 10px/1 var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+/* ============================================================ 卡片箭头 ==== */
+/*
+  demo：右下箭头默认 opacity-0，卡片 hover 才淡入并染成强调色。
+  宿主是 .a-fcard（本身就是 group），所以直接用后代选择器即可。
+*/
+.a-fcard__arrow {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  opacity: 0;
+  transform: translate(-2px, 2px);
+  transition:
+    opacity var(--motion-fast, 180ms) var(--ease-ios, ease-out),
+    transform var(--motion-fast, 180ms) var(--ease-ios, ease-out),
+    color var(--motion-fast, 180ms) var(--ease-ios, ease-out);
+}
+
+.a-fcard:hover .a-fcard__arrow,
+.a-fcard:focus-within .a-fcard__arrow {
+  color: var(--primary);
+  opacity: 1;
+  transform: none;
+}
+
+/* ============================================================ 表格 ==== */
+/* 表头落在自己的底板上，与数据行拉开一层，符合 demo「标题行 + 分隔线」的分组感 */
+.fs-listhead {
+  background: var(--card);
+}
+
+/* 列表行不要 HUD 左侧滑入条，避免悬停时闪一下 */
+.fs-listcard table tbody tr::before {
+  content: none;
+}
+
+/* ============================================================ 降级 ==== */
+/*
+  prefers-reduced-motion：把本页新增的位移动效全部收掉，只保留状态本身
+  （选中 / 拖放 / hover 的颜色与描边仍照常生效，只是不再滑动）。
+*/
+@media (prefers-reduced-motion: reduce) {
+  .a-fcard__arrow {
+    transform: none;
+    transition: none;
+  }
+
+  .a-fcard:hover .a-fcard__arrow,
+  .a-fcard:focus-within .a-fcard__arrow {
+    transform: none;
+  }
+}

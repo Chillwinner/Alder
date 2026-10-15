@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.file.mapper.FileInfoMapper">
+
+    <insert id="insert">
+        INSERT INTO file_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="objectKey != null">object_key,</if>
+            <if test="originalName != null">original_name,</if>
+            <if test="displayName != null">display_name,</if>
+            <if test="suffix != null">suffix,</if>
+            <if test="size != null">size,</if>
+            <if test="mimeType != null">mime_type,</if>
+            <if test="isDir != null">is_dir,</if>
+            <if test="parentId != null">parent_id,</if>
+            <if test="workspaceId != null">workspace_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="contentMd5 != null">content_md5,</if>
+            <if test="storagePlatformSettingId != null">storage_platform_setting_id,</if>
+            <if test="uploadTime != null">upload_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="lastAccessTime != null">last_access_time,</if>
+            <if test="isDeleted != null">is_deleted,</if>
+            <if test="deletedTime != null">deleted_time,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="objectKey != null">#{objectKey},</if>
+            <if test="originalName != null">#{originalName},</if>
+            <if test="displayName != null">#{displayName},</if>
+            <if test="suffix != null">#{suffix},</if>
+            <if test="size != null">#{size},</if>
+            <if test="mimeType != null">#{mimeType},</if>
+            <if test="isDir != null">#{isDir},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="workspaceId != null">#{workspaceId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="contentMd5 != null">#{contentMd5},</if>
+            <if test="storagePlatformSettingId != null">#{storagePlatformSettingId},</if>
+            <if test="uploadTime != null">#{uploadTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="lastAccessTime != null">#{lastAccessTime},</if>
+            <if test="isDeleted != null">#{isDeleted},</if>
+            <if test="deletedTime != null">#{deletedTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateById">
+        UPDATE file_info
+        <set>
+            <if test="objectKey != null">object_key = #{objectKey},</if>
+            <if test="originalName != null">original_name = #{originalName},</if>
+            <if test="displayName != null">display_name = #{displayName},</if>
+            <if test="suffix != null">suffix = #{suffix},</if>
+            <if test="size != null">size = #{size},</if>
+            <if test="mimeType != null">mime_type = #{mimeType},</if>
+            <if test="isDir != null">is_dir = #{isDir},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="workspaceId != null">workspace_id = #{workspaceId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="contentMd5 != null">content_md5 = #{contentMd5},</if>
+            <if test="storagePlatformSettingId != null">storage_platform_setting_id = #{storagePlatformSettingId},</if>
+            <if test="uploadTime != null">upload_time = #{uploadTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="lastAccessTime != null">last_access_time = #{lastAccessTime},</if>
+            <if test="isDeleted != null">is_deleted = #{isDeleted},</if>
+            <if test="deletedTime != null">deleted_time = #{deletedTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertBatch">
+        INSERT INTO file_info (id, object_key, original_name, display_name, suffix, size, mime_type, is_dir, parent_id, workspace_id, user_id, content_md5, storage_platform_setting_id, upload_time, update_time, last_access_time, is_deleted, deleted_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.objectKey}, #{item.originalName}, #{item.displayName}, #{item.suffix}, #{item.size}, #{item.mimeType}, #{item.isDir}, #{item.parentId}, #{item.workspaceId}, #{item.userId}, #{item.contentMd5}, #{item.storagePlatformSettingId}, #{item.uploadTime}, #{item.updateTime}, #{item.lastAccessTime}, #{item.isDeleted}, #{item.deletedTime})
+        </foreach>
+    </insert>
+
+    <select id="selectByIds" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT * FROM file_info
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+
+    <sql id="inIds">
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </sql>
+
+    <select id="selectAuthorizedById" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE id = #{id}
+          AND workspace_id = #{workspaceId}
+          AND is_deleted = 0
+    </select>
+
+    <select id="selectByIdAndWorkspace" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE id = #{id}
+          AND workspace_id = #{workspaceId}
+    </select>
+
+    <select id="selectByIdsAndWorkspace" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE id IN <include refid="inIds"/>
+          AND workspace_id = #{workspaceId}
+    </select>
+
+    <select id="selectByIdsAndWorkspaceDeleted" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE id IN <include refid="inIds"/>
+          AND workspace_id = #{workspaceId}
+        <if test="isDeleted != null">
+            AND is_deleted = #{isDeleted}
+        </if>
+    </select>
+
+    <select id="selectChildren" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE parent_id = #{parentId}
+          AND workspace_id = #{workspaceId}
+        <if test="isDeleted != null">
+            AND is_deleted = #{isDeleted}
+        </if>
+    </select>
+
+    <select id="selectChildrenOrderedByDirAndUpdate" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE parent_id = #{parentId}
+          AND workspace_id = #{workspaceId}
+          AND is_deleted = 0
+        ORDER BY is_dir DESC, update_time DESC
+    </select>
+
+    <select id="selectChildrenOrderedByDirAndUpload" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE parent_id = #{parentId}
+          AND workspace_id = #{workspaceId}
+          AND is_deleted = 0
+        ORDER BY is_dir DESC, upload_time ASC
+    </select>
+
+    <select id="selectSameLevelExactName" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE workspace_id = #{workspaceId}
+          AND is_dir = #{isDir}
+          AND is_deleted = 0
+          AND lower(display_name) = lower(#{displayName})
+        <choose>
+            <when test="parentId == null or parentId == ''">
+                AND parent_id IS NULL
+            </when>
+            <otherwise>
+                AND parent_id = #{parentId}
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="storagePlatformSettingId == null or storagePlatformSettingId == ''">
+                AND storage_platform_setting_id IS NULL
+            </when>
+            <otherwise>
+                AND storage_platform_setting_id = #{storagePlatformSettingId}
+            </otherwise>
+        </choose>
+        LIMIT 1
+    </select>
+
+    <select id="selectSameLevelByDisplayName" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE workspace_id = #{workspaceId}
+          AND is_dir = #{isDir}
+          AND is_deleted = 0
+          AND display_name LIKE #{baseName} || '%'
+        <choose>
+            <when test="parentId == null or parentId == ''">
+                AND parent_id IS NULL
+            </when>
+            <otherwise>
+                AND parent_id = #{parentId}
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="storagePlatformSettingId == null or storagePlatformSettingId == ''">
+                AND storage_platform_setting_id IS NULL
+            </when>
+            <otherwise>
+                AND storage_platform_setting_id = #{storagePlatformSettingId}
+            </otherwise>
+        </choose>
+        <if test="excludeFileId != null and excludeFileId != ''">
+            AND id != #{excludeFileId}
+        </if>
+    </select>
+
+    <select id="selectFileList" resultType="com.xddcodec.fs.File.domain.vo.FileVO">
+        SELECT fi.*,
+               CASE WHEN fuf.file_id IS NOT NULL THEN 1 ELSE 0 END AS is_favorite
+        FROM file_info fi
+                 LEFT JOIN file_user_favorites fuf
+                           ON fi.id = fuf.file_id AND fuf.user_id = #{userId}
+        WHERE fi.workspace_id = #{workspaceId}
+          AND fi.is_deleted = 0
+        <choose>
+            <when test="storagePlatformSettingId == null or storagePlatformSettingId == ''">
+                AND fi.storage_platform_setting_id IS NULL
+            </when>
+            <otherwise>
+                AND fi.storage_platform_setting_id = #{storagePlatformSettingId}
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="isRecents == true">
+                AND fi.is_dir = 0
+                ORDER BY fi.last_access_time DESC
+            </when>
+            <otherwise>
+                <if test="isFavorite == true and parentId == null">
+                    AND fuf.file_id IS NOT NULL
+                </if>
+                <if test="isDir == true">
+                    AND fi.is_dir = 1
+                </if>
+                <if test="applyParentFilter == true">
+                    <choose>
+                        <when test="parentId == null or parentId == ''">
+                            AND fi.parent_id IS NULL
+                        </when>
+                        <otherwise>
+                            AND fi.parent_id = #{parentId}
+                        </otherwise>
+                    </choose>
+                </if>
+                <if test="keyword != null and keyword != ''">
+                    AND (fi.original_name LIKE '%' || #{keyword} || '%'
+                        OR fi.display_name LIKE '%' || #{keyword} || '%')
+                </if>
+                <if test="filterMode == 'in' and suffixes != null and suffixes.size() &gt; 0">
+                    AND fi.is_dir = 0
+                    AND fi.suffix IN
+                    <foreach collection="suffixes" item="suffix" open="(" separator="," close=")">
+                        #{suffix}
+                    </foreach>
+                </if>
+                <if test="filterMode == 'other'">
+                    AND fi.is_dir = 0
+                    AND (
+                    <if test="suffixes != null and suffixes.size() &gt; 0">
+                        fi.suffix IN
+                        <foreach collection="suffixes" item="suffix" open="(" separator="," close=")">
+                            #{suffix}
+                        </foreach>
+                        OR
+                    </if>
+                    <if test="excludeSuffixes != null and excludeSuffixes.size() &gt; 0">
+                        fi.suffix NOT IN
+                        <foreach collection="excludeSuffixes" item="suffix" open="(" separator="," close=")">
+                            #{suffix}
+                        </foreach>
+                        OR
+                    </if>
+                    fi.suffix IS NULL OR fi.suffix = ''
+                    )
+                </if>
+                <if test="filterMode == 'unknown'">
+                    AND fi.is_dir = 0
+                    AND (
+                    <if test="excludeSuffixes != null and excludeSuffixes.size() &gt; 0">
+                        fi.suffix NOT IN
+                        <foreach collection="excludeSuffixes" item="suffix" open="(" separator="," close=")">
+                            #{suffix}
+                        </foreach>
+                        OR
+                    </if>
+                    fi.suffix IS NULL OR fi.suffix = ''
+                    )
+                </if>
+                ORDER BY fi.is_dir DESC
+                <choose>
+                    <when test="orderByField == 'display_name'">
+                        <choose>
+                            <when test="isAsc == true">
+                                , CASE WHEN fi.display_name ~ '[0-9]' THEN 0 ELSE 1 END ASC
+                                , LOWER(SUBSTRING(fi.display_name FROM '^[^0-9]*')) ASC
+                                , CAST(NULLIF((SELECT (regexp_matches(fi.display_name, '[0-9]+', 'g'))[1] LIMIT 1 OFFSET 0), '') AS BIGINT) ASC
+                                , CAST(NULLIF((SELECT (regexp_matches(fi.display_name, '[0-9]+', 'g'))[1] LIMIT 1 OFFSET 1), '') AS BIGINT) ASC
+                                , CAST(NULLIF((SELECT (regexp_matches(fi.display_name, '[0-9]+', 'g'))[1] LIMIT 1 OFFSET 2), '') AS BIGINT) ASC
+                                , LOWER(fi.display_name) ASC
+                            </when>
+                            <otherwise>
+                                , CASE WHEN fi.display_name ~ '[0-9]' THEN 0 ELSE 1 END DESC
+                                , LOWER(SUBSTRING(fi.display_name FROM '^[^0-9]*')) DESC
+                                , CAST(NULLIF((SELECT (regexp_matches(fi.display_name, '[0-9]+', 'g'))[1] LIMIT 1 OFFSET 0), '') AS BIGINT) DESC
+                                , CAST(NULLIF((SELECT (regexp_matches(fi.display_name, '[0-9]+', 'g'))[1] LIMIT 1 OFFSET 1), '') AS BIGINT) DESC
+                                , CAST(NULLIF((SELECT (regexp_matches(fi.display_name, '[0-9]+', 'g'))[1] LIMIT 1 OFFSET 2), '') AS BIGINT) DESC
+                                , LOWER(fi.display_name) DESC
+                            </otherwise>
+                        </choose>
+                    </when>
+                    <when test="orderByField == 'suffix'">
+                        <choose>
+                            <when test="isAsc == true">, fi.suffix ASC</when>
+                            <otherwise>, fi.suffix DESC</otherwise>
+                        </choose>
+                    </when>
+                    <when test="orderByField == 'size'">
+                        <choose>
+                            <when test="isAsc == true">, fi.size ASC</when>
+                            <otherwise>, fi.size DESC</otherwise>
+                        </choose>
+                    </when>
+                    <otherwise>
+                        <choose>
+                            <when test="isAsc == true">, fi.update_time ASC</when>
+                            <otherwise>, fi.update_time DESC</otherwise>
+                        </choose>
+                    </otherwise>
+                </choose>
+                , fi.id ASC
+            </otherwise>
+        </choose>
+    </select>
+
+    <sql id="filterByStoragePlatformSettingId">
+        <choose>
+            <when test="storagePlatformSettingId == null or storagePlatformSettingId == ''">
+                AND storage_platform_setting_id IS NULL
+            </when>
+            <otherwise>
+                AND storage_platform_setting_id = #{storagePlatformSettingId}
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="filterByStoragePlatformSettingIdT1">
+        <choose>
+            <when test="storagePlatformSettingId == null or storagePlatformSettingId == ''">
+                AND t1.storage_platform_setting_id IS NULL
+            </when>
+            <otherwise>
+                AND t1.storage_platform_setting_id = #{storagePlatformSettingId}
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="selectUsedFiles" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE workspace_id = #{workspaceId}
+        <include refid="filterByStoragePlatformSettingId"/>
+          AND is_deleted = 0
+          AND is_dir = 0
+    </select>
+
+    <select id="selectDirs" resultType="com.xddcodec.fs.File.domain.vo.FileVO">
+        SELECT *
+        FROM file_info
+        WHERE workspace_id = #{workspaceId}
+        <include refid="filterByStoragePlatformSettingId"/>
+          AND is_deleted = 0
+          AND is_dir = 1
+        <choose>
+            <when test="parentId != null and parentId != ''">
+                AND parent_id = #{parentId}
+            </when>
+            <otherwise>
+                AND parent_id IS NULL
+            </otherwise>
+        </choose>
+        ORDER BY update_time DESC
+    </select>
+
+    <select id="selectByIdsNotDeleted" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE id IN <include refid="inIds"/>
+          AND is_deleted = 0
+    </select>
+
+    <select id="selectReusableByContent" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE content_md5 = #{contentMd5}
+          AND size = #{size}
+          AND is_dir = 0
+          AND object_key IS NOT NULL
+        <choose>
+            <when test="storageSettingId == null or storageSettingId == ''">
+                AND storage_platform_setting_id IS NULL
+            </when>
+            <otherwise>
+                AND storage_platform_setting_id = #{storageSettingId}
+            </otherwise>
+        </choose>
+        ORDER BY is_deleted ASC, upload_time ASC
+    </select>
+
+    <select id="countByObjectKey" resultType="long">
+        SELECT COUNT(1)
+        FROM file_info
+        WHERE object_key = #{objectKey}
+        <choose>
+            <when test="storageSettingId == null or storageSettingId == ''">
+                AND storage_platform_setting_id IS NULL
+            </when>
+            <otherwise>
+                AND storage_platform_setting_id = #{storageSettingId}
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectExpiredRecycle" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE is_deleted = 1
+          AND deleted_time &lt; #{expireTime}
+        ORDER BY deleted_time ASC
+    </select>
+
+    <select id="selectUploadStats" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT upload_time, size
+        FROM file_info
+        WHERE workspace_id = #{workspaceId}
+        <include refid="filterByStoragePlatformSettingId"/>
+          AND is_dir = 0
+          AND is_deleted = 0
+          AND upload_time BETWEEN #{startTime} AND #{endTime}
+    </select>
+
+    <select id="selectDirectoryChildren" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT *
+        FROM file_info
+        WHERE parent_id = #{parentId}
+          AND workspace_id = #{workspaceId}
+          AND is_deleted = 0
+        <choose>
+            <when test="storagePlatformSettingId == null or storagePlatformSettingId == ''">
+                AND storage_platform_setting_id IS NULL
+            </when>
+            <otherwise>
+                AND storage_platform_setting_id = #{storagePlatformSettingId}
+            </otherwise>
+        </choose>
+        ORDER BY is_dir DESC, display_name ASC
+    </select>
+
+    <select id="selectParentIds" resultType="java.lang.String">
+        SELECT parent_id
+        FROM file_info
+        WHERE id IN <include refid="inIds"/>
+          AND parent_id IS NOT NULL
+          AND workspace_id = #{workspaceId}
+    </select>
+
+    <select id="selectDeletedIds" resultType="java.lang.String">
+        SELECT id
+        FROM file_info
+        WHERE id IN <include refid="inIds"/>
+          AND is_deleted = 1
+    </select>
+
+    <select id="selectTopLevelRecycleIds" resultType="java.lang.String">
+        SELECT t1.id
+        FROM file_info t1
+        WHERE t1.workspace_id = #{workspaceId}
+        <include refid="filterByStoragePlatformSettingIdT1"/>
+          AND t1.is_deleted = 1
+          AND (
+            t1.parent_id IS NULL
+                OR NOT EXISTS (
+                    SELECT 1
+                    FROM file_info t2
+                    WHERE t2.id = t1.parent_id
+                      AND t2.is_deleted = 1
+                )
+            )
+    </select>
+
+    <select id="selectRecyclePage" resultType="com.xddcodec.fs.File.domain.FileInfo">
+        SELECT t1.*
+        FROM file_info t1
+        WHERE t1.workspace_id = #{workspaceId}
+        <include refid="filterByStoragePlatformSettingIdT1"/>
+          AND t1.is_deleted = 1
+        <choose>
+            <when test="keyword != null and keyword != ''">
+                AND (
+                    t1.original_name LIKE '%' || #{keyword} || '%'
+                    OR t1.display_name LIKE '%' || #{keyword} || '%'
+                )
+            </when>
+            <otherwise>
+                AND (
+                    t1.parent_id IS NULL
+                        OR NOT EXISTS (
+                            SELECT 1
+                            FROM file_info t2
+                            WHERE t2.id = t1.parent_id
+                              AND t2.is_deleted = 1
+                        )
+                    )
+            </otherwise>
+        </choose>
+        ORDER BY t1.is_dir DESC, t1.update_time DESC
+    </select>
+
+    <update id="markDeletedByIds">
+        UPDATE file_info
+        SET is_deleted = 1,
+            deleted_time = #{deletedTime}
+        WHERE id IN <include refid="inIds"/>
+    </update>
+
+    <update id="restoreByIds">
+        UPDATE file_info
+        SET is_deleted = 0,
+            deleted_time = NULL
+        WHERE id IN <include refid="inIds"/>
+          AND workspace_id = #{workspaceId}
+    </update>
+
+    <update id="updateParentAndName">
+        UPDATE file_info
+        SET parent_id = #{parentId},
+            display_name = #{displayName},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteByIds">
+        DELETE FROM file_info
+        WHERE id IN <include refid="inIds"/>
+    </delete>
+</mapper>

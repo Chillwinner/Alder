@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xddcodec.fs.workspaceboard.mapper.WorkspaceMemoMapper">
+
+    <insert id="insert">
+        INSERT INTO workspace_memo (id, workspace_id, title, created_by, visibility, body_html, body_md, file_id, sort_order, created_at, updated_at)
+        VALUES (#{id}, #{workspaceId}, #{title}, #{createdBy}, #{visibility}, #{bodyHtml}, #{bodyMd}, #{fileId}, #{sortOrder}, NOW(), NOW())
+    </insert>
+
+    <update id="updateMeta">
+        UPDATE workspace_memo
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="pinned == true">pinned = TRUE,</if>
+            <if test="pinned == false">pinned = FALSE,</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="bodyHtml != null">body_html = #{bodyHtml},</if>
+            <if test="bodyMd != null">body_md = #{bodyMd},</if>
+            <if test="fileId != null">file_id = #{fileId},</if>
+            <if test="visibility != null">visibility = #{visibility},</if>
+            updated_at = NOW(),
+        </set>
+        WHERE id = #{id} AND workspace_id = #{workspaceId} AND deleted_at IS NULL
+    </update>
+
+    <update id="softDelete">
+        UPDATE workspace_memo
+        SET deleted_at = NOW(),
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND workspace_id = #{workspaceId}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="restore">
+        UPDATE workspace_memo
+        SET deleted_at = NULL,
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND workspace_id = #{workspaceId}
+          AND deleted_at IS NOT NULL
+    </update>
+
+    <select id="selectDeletedByFileId" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemo">
+        SELECT *
+        FROM workspace_memo
+        WHERE file_id = #{fileId}
+          AND workspace_id = #{workspaceId}
+          AND deleted_at IS NOT NULL
+        ORDER BY deleted_at DESC
+        LIMIT 1
+    </select>
+
+    <update id="touchUpdatedAt">
+        UPDATE workspace_memo
+        SET updated_at = NOW()
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </update>
+
+    <select id="selectById" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemo">
+        SELECT *
+        FROM workspace_memo
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </select>
+
+    <select id="selectMetaById" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemo">
+        SELECT id, workspace_id, title, created_by, visibility, file_id, pinned, sort_order, created_at, updated_at
+        FROM workspace_memo
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </select>
+
+    <select id="selectByIdAndWorkspace" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemo">
+        SELECT *
+        FROM workspace_memo
+        WHERE id = #{id}
+          AND workspace_id = #{workspaceId}
+          AND deleted_at IS NULL
+    </select>
+
+    <select id="selectByWorkspace" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemo">
+        SELECT id, workspace_id, title, created_by, visibility, file_id, pinned, sort_order, created_at, updated_at
+        FROM workspace_memo
+        WHERE workspace_id = #{workspaceId}
+          AND deleted_at IS NULL
+          AND (
+            lower(coalesce(visibility, 'shared')) &lt;&gt; 'private'
+            OR created_by = #{userId}
+          )
+        ORDER BY pinned DESC, sort_order ASC, updated_at DESC
+    </select>
+
+    <select id="selectListSnippet" resultType="java.lang.String">
+        SELECT left(
+            trim(regexp_replace(
+                regexp_replace(
+                    split_part(coalesce(body_md, ''), '](data:', 1),
+                    '!\[[^]]*\]?\s*$', '', 'g'),
+                '\s+', ' ', 'g')),
+            180)
+        FROM workspace_memo
+        WHERE id = #{id}
+          AND workspace_id = #{workspaceId}
+          AND deleted_at IS NULL
+          AND (
+            lower(coalesce(visibility, 'shared')) &lt;&gt; 'private'
+            OR created_by = #{userId}
+          )
+    </select>
+
+    <select id="selectByFileId" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemo">
+        SELECT id, workspace_id, title, created_by, visibility, file_id, pinned, sort_order, created_at, updated_at
+        FROM workspace_memo
+        WHERE file_id = #{fileId}
+          AND workspace_id = #{workspaceId}
+          AND deleted_at IS NULL
+        LIMIT 1
+    </select>
+
+    <select id="selectByTitle" resultType="com.xddcodec.fs.workspaceboard.domain.WorkspaceMemo">
+        SELECT id, workspace_id, title, created_by, visibility, file_id, pinned, sort_order, created_at, updated_at
+        FROM workspace_memo
+        WHERE workspace_id = #{workspaceId}
+          AND deleted_at IS NULL
+          AND (
+            lower(coalesce(visibility, 'shared')) &lt;&gt; 'private'
+            OR created_by = #{userId}
+          )
+          AND lower(title) = lower(#{title})
+        ORDER BY updated_at DESC
+        LIMIT 1
+    </select>
+</mapper>
