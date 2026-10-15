@@ -10,7 +10,7 @@
 
 基於 [Free-FS](https://github.com/dromara/free-fs) 修改，[Apache License 2.0](LICENSE)，歸屬見 [NOTICE](NOTICE)。
 
-[中文](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [Русский](README.ru.md)
+[English](README.md) · [中文](README.zh.md) · [繁體](README.zh-Hant.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [Русский](README.ru.md)
 
 </div>
 
@@ -79,7 +79,7 @@ Alder 按**本地工作站**來用：一台機器（或一個 Docker Compose）�
 | **分享** | 連結和提取碼。別人分享來的檔案可以存進自己的空間。 | |
 | **站點設定** | 設定裡改郵件、網域、CORS、本機路徑、TURN。金鑰不回顯。可匯出加密的 `alder-site.box`。 | |
 
-介面語言：簡體中文、繁體中文、English。
+介面語言：English、簡體中文、繁體中文。
 
 ## 部署（本機工作站）
 

@@ -187,15 +187,15 @@ export function AppearanceForm() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-<SelectGroup>
+                    <SelectGroup>
+                      <SelectItem value='en'>
+                        {t('appearance.langEn')}
+                      </SelectItem>
                       <SelectItem value='zh'>
                         {t('appearance.langZh')}
                       </SelectItem>
                       <SelectItem value='zh-HK'>
                         {t('appearance.langZhHK')}
-                      </SelectItem>
-                      <SelectItem value='en'>
-                        {t('appearance.langEn')}
                       </SelectItem>
                     </SelectGroup>
 </SelectContent>

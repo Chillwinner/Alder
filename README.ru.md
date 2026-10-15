@@ -10,7 +10,7 @@
 
 Изменён на основе [Free-FS](https://github.com/dromara/free-fs). [Apache License 2.0](LICENSE). Источник — в [NOTICE](NOTICE).
 
-[中文](README.md) · [繁體](README.zh-Hant.md) · [English](README.en.md) · [日本語](README.ja.md) · [Français](README.fr.md)
+[English](README.md) · [中文](README.zh.md) · [繁體](README.zh-Hant.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [Русский](README.ru.md)
 
 </div>
 
@@ -79,7 +79,7 @@ Alder — **локальная рабочая станция**: одна маш�
 | **Доступ** | Ссылка и код. Полученный файл можно сохранить в своё пространство. | |
 | **Настройки сайта** | Почта, домен, CORS, локальные пути, TURN. Секреты не возвращаются. Экспорт `alder-site.box`. | |
 
-Языки интерфейса: упрощённый китайский, традиционный китайский, английский.
+Языки интерфейса: английский, упрощённый китайский, традиционный китайский.
 
 ## Развёртывание (локальная станция)
 

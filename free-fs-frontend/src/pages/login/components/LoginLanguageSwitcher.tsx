@@ -8,9 +8,9 @@ import { getAppLang } from '@/i18n'
 import { cn } from '@/lib/utils'
 
 const OPTIONS = [
+  { value: 'en', label: 'English' },
   { value: 'zh', label: '简体' },
   { value: 'zh-HK', label: '繁體' },
-  { value: 'en', label: 'English' },
 ] as const
 
 export function LoginLanguageSwitcher() {

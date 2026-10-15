@@ -1,14 +1,14 @@
-# Alder 前端
+# Alder frontend
 
-工作空间界面。产品说明见仓库根目录 [README](../README.md)。
+Workspace UI. Product notes are in the root [README](../README.md).
 
-## 技术栈
+## Stack
 
-React 19、TypeScript、Vite、React Router、TanStack Query、Zustand、Tailwind CSS、shadcn/ui、Axios。
+React 19, TypeScript, Vite, React Router, TanStack Query, Zustand, Tailwind CSS, shadcn/ui, Axios.
 
-## 本地启动
+## Local run
 
-需要 Node.js `^20.19.0` 或 `>=22.12.0`，以及 pnpm 9+。后端默认 `http://localhost:8080`。
+Node.js `^20.19.0` or `>=22.12.0`, and pnpm 9+. The API defaults to `http://localhost:8080`.
 
 ```bash
 cd free-fs-frontend
@@ -16,13 +16,13 @@ pnpm install
 pnpm dev
 ```
 
-打开 `http://localhost:5180`。
+Open `http://localhost:5180`.
 
 ```bash
 pnpm build
 pnpm preview
 ```
 
-## 许可证
+## License
 
-以 [Apache License 2.0](../LICENSE) 发布。部分内容基于 [Free-FS](https://github.com/dromara/free-fs) 修改，归属见 [NOTICE](../NOTICE)。
+Released under the [Apache License 2.0](../LICENSE). Parts are modified from [Free-FS](https://github.com/dromara/free-fs). See [NOTICE](../NOTICE).

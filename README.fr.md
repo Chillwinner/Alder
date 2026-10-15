@@ -10,7 +10,7 @@ Fichiers, mémos et conversation sur la même machine. On glisse, et ça se rejo
 
 Modifié à partir de [Free-FS](https://github.com/dromara/free-fs). [Licence Apache 2.0](LICENSE). Attribution dans [NOTICE](NOTICE).
 
-[中文](README.md) · [繁體](README.zh-Hant.md) · [English](README.en.md) · [日本語](README.ja.md) · [Русский](README.ru.md)
+[English](README.md) · [中文](README.zh.md) · [繁體](README.zh-Hant.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [Русский](README.ru.md)
 
 </div>
 
@@ -79,7 +79,7 @@ Comment glisser :
 | **Partage** | Lien et code. Un fichier reçu peut être enregistré dans son espace. | |
 | **Config du site** | Courrier, domaine, CORS, chemins locaux, TURN. Les secrets ne sont pas renvoyés. Export chiffré `alder-site.box`. | |
 
-Langues de l’interface : chinois simplifié, chinois traditionnel, anglais.
+Langues de l’interface : anglais, chinois simplifié, chinois traditionnel.
 
 ## Déploiement (poste local)
 

@@ -10,7 +10,7 @@
 
 [Free-FS](https://github.com/dromara/free-fs) を改変。[Apache License 2.0](LICENSE)。帰属は [NOTICE](NOTICE)。
 
-[中文](README.md) · [繁體](README.zh-Hant.md) · [English](README.en.md) · [Français](README.fr.md) · [Русский](README.ru.md)
+[English](README.md) · [中文](README.zh.md) · [繁體](README.zh-Hant.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [Русский](README.ru.md)
 
 </div>
 
@@ -79,7 +79,7 @@ Alder は**ローカルのワークステーション**です。一台（また�
 | **共有** | リンクと取出コード。受け取ったファイルを自分の空間へ保存できる。 | |
 | **サイト設定** | メール、ドメイン、CORS、ローカルパス、TURN。秘密は再表示しない。暗号化 `alder-site.box` を書き出せる。 | |
 
-画面の言語：簡体中国語、繁体中国語、英語。
+画面の言語：英語、簡体中国語、繁体中国語。
 
 ## 配備（ローカルワークステーション）
 

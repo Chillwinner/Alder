@@ -82,10 +82,10 @@ function pack(files: Record<(typeof NAMESPACES)[number], object>) {
 }
 
 export function getAppLang(): AppLang {
-  const lng = (i18n.resolvedLanguage || i18n.language || 'zh').replace('_', '-')
+  const lng = (i18n.resolvedLanguage || i18n.language || 'en').replace('_', '-')
   if (lng === 'zh-HK' || lng.toLowerCase() === 'zh-hk') return 'zh-HK'
-  if (lng.startsWith('en')) return 'en'
-  return 'zh'
+  if (lng.startsWith('zh')) return 'zh'
+  return 'en'
 }
 
 /** 把接口返回的 msg（稳定 key，可选 `|arg`）翻成当前语言。对不上就原样显示。 */
@@ -160,8 +160,8 @@ void i18n
         progress: zhHKProgress,
       }),
     },
-    fallbackLng: 'zh',
-    supportedLngs: ['zh', 'zh-HK', 'en'],
+    fallbackLng: 'en',
+    supportedLngs: ['en', 'zh', 'zh-HK'],
     nonExplicitSupportedLngs: false,
     load: 'currentOnly',
     ns: [...NAMESPACES],
