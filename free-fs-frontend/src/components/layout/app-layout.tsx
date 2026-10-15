@@ -18,7 +18,6 @@ import { Main } from './main'
 import { WorkspaceInvitationDock } from '@/components/workspace-invitation-dock'
 import { WorkspaceBoardMetaSseSync } from '@/components/workspace-board-meta-sse-sync'
 import { PageMotion } from './page-motion'
-import { AiDockHost } from '@/components/ai-dock/ai-dock-host'
 import { MemoPreviewHost } from '@/components/memo-preview-host'
 import { useDragBodyFlag } from '@/hooks/use-im-external-file-drop'
 import { useEdgeWake } from '@/hooks/use-edge-wake'
@@ -97,7 +96,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* 与主侧栏同处 SidebarProvider，设置内外观表单的 useSidebar 才能取到主布局侧边栏 */}
         <SettingsDialog />
         <MemoPreviewHost />
-        <AiDockHost />
         <WorkspaceInvitationDock />
         <WorkspaceBoardMetaSseSync />
       </ShortcutsProvider>

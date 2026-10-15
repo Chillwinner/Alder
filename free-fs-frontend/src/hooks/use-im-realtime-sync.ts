@@ -5,21 +5,17 @@
 
 import { useEffect, useRef } from 'react'
 import { notifyImSync, notifyUnreadTotalRefresh } from '@/components/messages/im-events'
-import { useImStore } from '@/store/im'
 
-const ACTIVE_SYNC_MS = 2500
-const BACKGROUND_SYNC_MS = 8000
+/** 连接正常时只做慢速补拉，防止偶发丢推送。 */
+const CONNECTED_FALLBACK_MS = 45_000
+/** 套接字断开时才加快轮询，直到 onConnect 再把间隔拉长。 */
+const DISCONNECTED_SYNC_MS = 8_000
 
-function isChatUiActive() {
-  const state = useImStore.getState()
-  return state.dialogOpen || state.detachedChats.length > 0
-}
-
-function syncIntervalMs() {
-  return isChatUiActive() ? ACTIVE_SYNC_MS : BACKGROUND_SYNC_MS
-}
-
+/**
+ * 聊天以 WebSocket 推送为主。这里只在断线时补拉，在线时用长间隔兜底。
+ */
 export function useImRealtimeSync(enabled: boolean) {
+  const connectedRef = useRef(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
@@ -32,23 +28,31 @@ export function useImRealtimeSync(enabled: boolean) {
 
     const schedule = () => {
       if (timerRef.current) clearInterval(timerRef.current)
-      timerRef.current = setInterval(tick, syncIntervalMs())
+      const interval = connectedRef.current ? CONNECTED_FALLBACK_MS : DISCONNECTED_SYNC_MS
+      timerRef.current = setInterval(tick, interval)
     }
 
+    const onConnected = () => {
+      connectedRef.current = true
+      schedule()
+    }
+
+    const onDisconnected = () => {
+      connectedRef.current = false
+      tick()
+      schedule()
+    }
+
+    connectedRef.current = false
     tick()
     schedule()
-
-    const unsubscribe = useImStore.subscribe((state, prev) => {
-      const active = state.dialogOpen || state.detachedChats.length > 0
-      const wasActive = prev.dialogOpen || prev.detachedChats.length > 0
-      if (active !== wasActive) {
-        schedule()
-      }
-    })
+    window.addEventListener('im:connected', onConnected)
+    window.addEventListener('im:disconnected', onDisconnected)
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
-      unsubscribe()
+      window.removeEventListener('im:connected', onConnected)
+      window.removeEventListener('im:disconnected', onDisconnected)
     }
   }, [enabled])
 }

@@ -41,7 +41,9 @@
     "cpuSub": "本机占用",
     "memorySub": "{{used}} / {{total}}",
     "unavailable": "不可用",
-    "foot": "共 {{count}} 个文件 · 已用 {{used}}"
+    "foot": "共 {{count}} 个文件 · 已用 {{used}}",
+    "consoleTitle": "本机",
+    "filesHeading": "文件"
   },
   "recentMemos": {
     "title": "备忘录",

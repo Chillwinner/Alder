@@ -41,7 +41,9 @@
     "cpuSub": "This host",
     "memorySub": "{{used}} / {{total}}",
     "unavailable": "Unavailable",
-    "foot": "{{count}} files · {{used}} used"
+    "foot": "{{count}} files · {{used}} used",
+    "consoleTitle": "Host",
+    "filesHeading": "Files"
   },
   "recentMemos": {
     "title": "Memos",

@@ -8,13 +8,11 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { Bell, Check, Clock, FolderInput, Loader2, UserPlus, Users, Video, Vote, X } from 'lucide-react'
-import { aiApi } from '@/api/ai'
+import { decideFriendRequest, acceptWorkspaceInvitation, rejectWorkspaceInvitation, castNotificationVote, dismissAiReminders } from '@/lib/notification-commands'
 import { toast } from 'sonner'
-import { acceptFriend, rejectFriend } from '@/api/im'
 import { openMeetingWindow } from '@/api/meeting'
-import { castWorkspaceVote, type WorkspaceVoteParticipant } from '@/api/vote'
+import type { WorkspaceVoteParticipant } from '@/api/vote'
 import { UserAvatar } from '@/components/user-avatar'
-import { invitationApi } from '@/api/invitation'
 import { useAuth } from '@/contexts/auth-context'
 import { useHeaderAlarmRing, useHeaderCountAlert } from '@/hooks/use-header-count-alert'
 import {
@@ -22,10 +20,6 @@ import {
   useHeaderNotifications,
 } from '@/hooks/use-header-notifications'
 import { primeNotificationAudio } from '@/lib/notification-chime'
-import {
-  notifyInvitationsChanged,
-} from '@/hooks/use-workspace-invitations'
-import { useWorkspaceStore } from '@/store/workspace'
 import { displayRoleName } from '@/utils/role-label'
 import { translateServerText } from '@/i18n'
 import { CollectionAskCard } from '@/components/layout/collection-ask-card'
@@ -118,9 +112,7 @@ export function HeaderNotificationPopover() {
 
   const dismissReminder = (inboxId: string) => {
     hideItem(`reminder:${inboxId}`)
-    void aiApi.dismissReminderInbox(inboxId).then(() => {
-      notifyHeaderNotificationsChanged()
-    })
+    void dismissAiReminders([inboxId])
   }
 
   const clearAllVisible = () => {
@@ -139,11 +131,7 @@ export function HeaderNotificationPopover() {
     }
     for (const reminder of reminderInbox) keys.push(`reminder:${reminder.id}`)
     hideItems(keys)
-    if (reminderInbox.length) {
-      void Promise.all(reminderInbox.map((item) => aiApi.dismissReminderInbox(item.id))).then(
-        () => notifyHeaderNotificationsChanged()
-      )
-    }
+    void dismissAiReminders(reminderInbox.map((item) => item.id))
   }
 
   const onOpenChange = (next: boolean) => {
@@ -161,15 +149,7 @@ export function HeaderNotificationPopover() {
   const handleAcceptFriend = async (friendId: string) => {
     setActingKey(`friend-accept-${friendId}`)
     try {
-      await acceptFriend(friendId)
-      toast.success(tMessages('friends.accepted'))
-      notifyHeaderNotificationsChanged()
-    } catch (cause) {
-      toast.error(
-        cause instanceof Error
-          ? translateServerText(cause.message, tMessages('friends.actionFailed'))
-          : tMessages('friends.actionFailed')
-      )
+      await decideFriendRequest(friendId, true)
     } finally {
       setActingKey(null)
     }
@@ -178,14 +158,7 @@ export function HeaderNotificationPopover() {
   const handleRejectFriend = async (friendId: string) => {
     setActingKey(`friend-reject-${friendId}`)
     try {
-      await rejectFriend(friendId)
-      notifyHeaderNotificationsChanged()
-    } catch (cause) {
-      toast.error(
-        cause instanceof Error
-          ? translateServerText(cause.message, tMessages('friends.actionFailed'))
-          : tMessages('friends.actionFailed')
-      )
+      await decideFriendRequest(friendId, false)
     } finally {
       setActingKey(null)
     }
@@ -194,22 +167,15 @@ export function HeaderNotificationPopover() {
   const handleAcceptInvite = async (token: string, workspaceId: string) => {
     setActingKey(`invite-accept-${token}`)
     try {
-      await invitationApi.acceptInvitation(token)
-      toast.success(tInvite('acceptSuccess'))
-      notifyInvitationsChanged()
-      notifyHeaderNotificationsChanged()
-      await loadWorkspaces()
-      const { workspaces } = useWorkspaceStore.getState()
-      const target =
-        workspaces.find((w) => w.id === workspaceId) ?? workspaces[0]
-      if (target) {
-        await activateWorkspace(target.id)
-        navigate(`/w/${target.slug}/`)
-      }
-      setOpen(false)
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : tInvite('acceptFailed'))
-      void refresh()
+      await acceptWorkspaceInvitation(token, workspaceId, {
+        loadWorkspaces,
+        activateWorkspace,
+        openWorkspace: (nextSlug) => {
+          navigate(`/w/${nextSlug}/`)
+          setOpen(false)
+        },
+        onAcceptFailed: () => void refresh(),
+      })
     } finally {
       setActingKey(null)
     }
@@ -218,13 +184,7 @@ export function HeaderNotificationPopover() {
   const handleRejectInvite = async (token: string) => {
     setActingKey(`invite-reject-${token}`)
     try {
-      await invitationApi.rejectInvitation(token)
-      toast.success(tInvite('rejectSuccess'))
-      notifyInvitationsChanged()
-      notifyHeaderNotificationsChanged()
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : tInvite('rejectFailed'))
-      void refresh()
+      await rejectWorkspaceInvitation(token, () => void refresh())
     } finally {
       setActingKey(null)
     }
@@ -241,14 +201,7 @@ export function HeaderNotificationPopover() {
   ) => {
     setActingKey(`vote-${choice}-${voteId}`)
     try {
-      await castWorkspaceVote(voteId, choice, workspaceId)
-      notifyHeaderNotificationsChanged()
-    } catch (cause) {
-      toast.error(
-        cause instanceof Error
-          ? translateServerText(cause.message, t('header.notifications.votes'))
-          : t('header.notifications.votes')
-      )
+      await castNotificationVote(voteId, choice, workspaceId)
     } finally {
       setActingKey(null)
     }

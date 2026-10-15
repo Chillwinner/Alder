@@ -27,6 +27,7 @@ import { checkNameConflicts, createFolder } from '@/api/file'
 import { UPLOAD_LIMITS, formatFileSize, shouldFilterFile } from '@/config/upload-limits'
 import { progressCalculator } from '@/utils/progress-calculator'
 import { stateMachine } from '@/utils/transfer-state-machine'
+import { hasActiveTransfer, hasUnfinishedTransfer, listByStatus } from '@/store/transfer-activity'
 import i18n from '@/i18n'
 import { readTransferPrefs } from '@/lib/transfer-prefs'
 
@@ -160,25 +161,17 @@ export const useTransferStore = create<TransferStore>((set, get) => ({
   getTaskList: () => Array.from(get().tasks.values()),
 
   getUploadingTasks: () =>
-    get()
-      .getTaskList()
-      .filter((task) =>
-        [
-          'idle',
-          'initialized',
-          'checking',
-          'uploading',
-          'paused',
-          'merging',
-        ].includes(task.status)
-      ),
+    listByStatus(get().getTaskList(), [
+      'idle',
+      'initialized',
+      'checking',
+      'uploading',
+      'paused',
+      'merging',
+    ]),
 
   getCompletedTasks: () =>
-    get()
-      .getTaskList()
-      .filter((task) =>
-        ['completed', 'failed', 'cancelled'].includes(task.status)
-      ),
+    listByStatus(get().getTaskList(), ['completed', 'failed', 'cancelled']),
 
   getCurrentSessionTasks: () => {
     const { currentSessionId, sessionTasks, tasks } = get()
@@ -456,6 +449,7 @@ export const useTransferStore = create<TransferStore>((set, get) => ({
             checking: 2,
             paused: 3,
             uploading: 4,
+            downloading: 4,
             merging: 5,
             cancelled: 6,
             failed: 7,
@@ -988,15 +982,7 @@ export const useTransferStore = create<TransferStore>((set, get) => ({
   },
 
   checkAndStartPolling: () => {
-    const { tasks } = get()
-    const hasActiveTasks = Array.from(tasks.values()).some(
-      (task) =>
-        task.status === 'uploading' ||
-        task.status === 'checking' ||
-        task.status === 'merging'
-    )
-
-    if (hasActiveTasks && pollingTimerId === null) {
+    if (hasActiveTransfer(get().tasks.values()) && pollingTimerId === null) {
       get().startPolling()
     }
   },
@@ -1005,15 +991,7 @@ export const useTransferStore = create<TransferStore>((set, get) => ({
     if (pollingTimerId !== null) return
 
     pollingTimerId = window.setInterval(async () => {
-      const { tasks } = get()
-      const activeTasks = Array.from(tasks.values()).filter(
-        (task) =>
-          task.status === 'uploading' ||
-          task.status === 'checking' ||
-          task.status === 'merging'
-      )
-
-      if (activeTasks.length === 0) {
+      if (!hasActiveTransfer(get().tasks.values())) {
         get().stopPolling()
         return
       }
@@ -1038,18 +1016,7 @@ export const useTransferStore = create<TransferStore>((set, get) => ({
     beforeUnloadWarningSetup = true
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      const { tasks } = get()
-      const hasUploadingTasks = Array.from(tasks.values()).some(
-        (task) =>
-          task.status === 'idle' ||
-          task.status === 'initialized' ||
-          task.status === 'uploading' ||
-          task.status === 'checking' ||
-          task.status === 'merging' ||
-          task.status === 'paused'
-      )
-
-      if (hasUploadingTasks) {
+      if (hasUnfinishedTransfer(get().tasks.values())) {
         event.preventDefault()
         event.returnValue = '有文件正在上传，离开页面将取消所有上传任务'
       }

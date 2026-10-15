@@ -97,6 +97,7 @@ export function useImSocket({ enabled, onPush, onLanEvent, onConnected }: UseImS
         client.deactivate().then(() => client.activate())
       },
       onWebSocketClose: () => {
+        window.dispatchEvent(new CustomEvent('im:disconnected'))
         client.deactivate().then(() => client.activate())
       },
     })

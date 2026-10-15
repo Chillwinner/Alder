@@ -21,11 +21,9 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { aiApi } from '@/api/ai'
-import { acceptFriend, rejectFriend } from '@/api/im'
 import { openMeetingWindow } from '@/api/meeting'
-import { invitationApi } from '@/api/invitation'
-import { castWorkspaceVote, type WorkspaceVoteParticipant } from '@/api/vote'
+import { decideFriendRequest, acceptWorkspaceInvitation, rejectWorkspaceInvitation, castNotificationVote, dismissAiReminders } from '@/lib/notification-commands'
+import type { WorkspaceVoteParticipant } from '@/api/vote'
 import {
   HubEmpty,
   HubLoading,
@@ -37,8 +35,6 @@ import {
   notifyHeaderNotificationsChanged,
   useHeaderNotifications,
 } from '@/hooks/use-header-notifications'
-import { notifyInvitationsChanged } from '@/hooks/use-workspace-invitations'
-import { useWorkspaceStore } from '@/store/workspace'
 import { displayRoleName } from '@/utils/role-label'
 import { translateServerText } from '@/i18n'
 import { CollectionAskCard } from '@/components/layout/collection-ask-card'
@@ -230,9 +226,7 @@ export default function NotificationsPage() {
                       label={t('header.notifications.dismiss')}
                       onClick={() => {
                         hideItem(`reminder:${item.id}`)
-                        void aiApi.dismissReminderInbox(item.id).then(() => {
-                          notifyHeaderNotificationsChanged()
-                        })
+                        void dismissAiReminders([item.id])
                       }}
                     />
                   }
@@ -261,9 +255,7 @@ export default function NotificationsPage() {
                         className='a-btn a-btn--sm a-btn--plain text-destructive'
                         onClick={() => {
                           hideItem(`reminder:${item.id}`)
-                          void aiApi.dismissReminderInbox(item.id).then(() => {
-                            notifyHeaderNotificationsChanged()
-                          })
+                          void dismissAiReminders([item.id])
                         }}
                       >
                         {t('header.notifications.dismissAlarm')}
@@ -400,16 +392,9 @@ export default function NotificationsPage() {
                               disabled={busy}
                               onClick={() => {
                                 setActingKey(`vote-AGREE-${vote.id}`)
-                                void castWorkspaceVote(vote.id, 'AGREE', vote.workspaceId)
-                                  .then(() => notifyHeaderNotificationsChanged())
-                                  .catch((cause: unknown) => {
-                                    toast.error(
-                                      cause instanceof Error
-                                        ? translateServerText(cause.message, t('header.notifications.votes'))
-                                        : t('header.notifications.votes')
-                                    )
-                                  })
-                                  .finally(() => setActingKey(null))
+                                void castNotificationVote(vote.id, 'AGREE', vote.workspaceId).finally(() =>
+                                  setActingKey(null)
+                                )
                               }}
                             >
                               {agreeBusy ? (
@@ -425,16 +410,9 @@ export default function NotificationsPage() {
                               disabled={busy}
                               onClick={() => {
                                 setActingKey(`vote-DISAGREE-${vote.id}`)
-                                void castWorkspaceVote(vote.id, 'DISAGREE', vote.workspaceId)
-                                  .then(() => notifyHeaderNotificationsChanged())
-                                  .catch((cause: unknown) => {
-                                    toast.error(
-                                      cause instanceof Error
-                                        ? translateServerText(cause.message, t('header.notifications.votes'))
-                                        : t('header.notifications.votes')
-                                    )
-                                  })
-                                  .finally(() => setActingKey(null))
+                                void castNotificationVote(vote.id, 'DISAGREE', vote.workspaceId).finally(() =>
+                                  setActingKey(null)
+                                )
                               }}
                             >
                               {disagreeBusy ? (
@@ -492,19 +470,7 @@ export default function NotificationsPage() {
                             disabled={busy}
                             onClick={() => {
                               setActingKey(`friend-accept-${friend.friendId}`)
-                              void acceptFriend(friend.friendId)
-                                .then(() => {
-                                  toast.success(tMessages('friends.accepted'))
-                                  notifyHeaderNotificationsChanged()
-                                })
-                                .catch((cause: unknown) => {
-                                  toast.error(
-                                    cause instanceof Error
-                                      ? translateServerText(cause.message, tMessages('friends.actionFailed'))
-                                      : tMessages('friends.actionFailed')
-                                  )
-                                })
-                                .finally(() => setActingKey(null))
+                              void decideFriendRequest(friend.friendId, true).finally(() => setActingKey(null))
                             }}
                           >
                             {tMessages('friends.accept')}
@@ -516,16 +482,7 @@ export default function NotificationsPage() {
                             disabled={busy}
                             onClick={() => {
                               setActingKey(`friend-reject-${friend.friendId}`)
-                              void rejectFriend(friend.friendId)
-                                .then(() => notifyHeaderNotificationsChanged())
-                                .catch((cause: unknown) => {
-                                  toast.error(
-                                    cause instanceof Error
-                                      ? translateServerText(cause.message, tMessages('friends.actionFailed'))
-                                      : tMessages('friends.actionFailed')
-                                  )
-                                })
-                                .finally(() => setActingKey(null))
+                              void decideFriendRequest(friend.friendId, false).finally(() => setActingKey(null))
                             }}
                           >
                             {tMessages('friends.reject')}
@@ -588,26 +545,12 @@ export default function NotificationsPage() {
                             disabled={busy || !token}
                             onClick={() => {
                               setActingKey(`invite-accept-${token}`)
-                              void invitationApi
-                                .acceptInvitation(token)
-                                .then(async () => {
-                                  toast.success(tInvite('acceptSuccess'))
-                                  notifyInvitationsChanged()
-                                  notifyHeaderNotificationsChanged()
-                                  await loadWorkspaces()
-                                  const { workspaces } = useWorkspaceStore.getState()
-                                  const target =
-                                    workspaces.find((item) => item.id === inv.workspaceId) ?? workspaces[0]
-                                  if (target) {
-                                    await activateWorkspace(target.id)
-                                    navigate(`/w/${target.slug}/`)
-                                  }
-                                })
-                                .catch((err: unknown) => {
-                                  toast.error(err instanceof Error ? err.message : tInvite('acceptFailed'))
-                                  void refresh()
-                                })
-                                .finally(() => setActingKey(null))
+                              void acceptWorkspaceInvitation(token, inv.workspaceId, {
+                                loadWorkspaces,
+                                activateWorkspace,
+                                openWorkspace: (nextSlug) => navigate(`/w/${nextSlug}/`),
+                                onAcceptFailed: () => void refresh(),
+                              }).finally(() => setActingKey(null))
                             }}
                           >
                             {tInvite('acceptInvite')}
@@ -619,18 +562,9 @@ export default function NotificationsPage() {
                             disabled={busy || !token}
                             onClick={() => {
                               setActingKey(`invite-reject-${token}`)
-                              void invitationApi
-                                .rejectInvitation(token)
-                                .then(() => {
-                                  toast.success(tInvite('rejectSuccess'))
-                                  notifyInvitationsChanged()
-                                  notifyHeaderNotificationsChanged()
-                                })
-                                .catch((err: unknown) => {
-                                  toast.error(err instanceof Error ? err.message : tInvite('rejectFailed'))
-                                  void refresh()
-                                })
-                                .finally(() => setActingKey(null))
+                              void rejectWorkspaceInvitation(token, () => void refresh()).finally(() =>
+                                setActingKey(null)
+                              )
                             }}
                           >
                             {tInvite('rejectInvite')}

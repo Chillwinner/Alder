@@ -8,18 +8,13 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { createApp, defineComponent, h } from 'vue'
-import { createPinia } from 'pinia'
-import { createMemoryHistory, createRouter, RouterView } from 'vue-router'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { joinWorkspaceMeeting } from '@/api/meeting'
 import type { AlderMeetingBridge } from '@/wbroom/api/room'
-import RoomView from '@/wbroom/views/RoomView.vue'
+import { mountMeetingRoom } from './mount-room'
 import { useAuth } from '@/contexts/auth-context'
 import { translateServerText } from '@/i18n'
-import { syncWbroomLangFromApp } from '@/lib/sync-wbroom-lang'
-import 'tldraw/tldraw.css'
 import './room-ios.css'
 
 export default function MeetingRoomPage() {
@@ -50,20 +45,13 @@ export default function MeetingRoomPage() {
     const workspaceId = params.get('ws') || ''
     const el = hostRef.current
     if (!el || !meetingId) return
-    let app: ReturnType<typeof createApp> | null = null
+    let release: (() => void) | null = null
     let cancelled = false
 
     ;(async () => {
       try {
         const joined = await joinWorkspaceMeeting(meetingId, workspaceId)
         if (cancelled) return
-        /*
-         * 后端在「会议不存在 / 未开启 / 已结束」时会返回 data:null，
-         * 而 request 层会把 null 原样透出。这里必须显式收口，
-         * 否则下面 `joined.roomId` 会抛
-         * "Cannot read properties of null (reading 'roomId')"，
-         * 整页黑屏只剩一个 toast（实测过）。
-         */
         if (!joined || !joined.roomId) {
           throw new Error(t('meeting.notOpen'))
         }
@@ -76,27 +64,8 @@ export default function MeetingRoomPage() {
           displayName: user?.username || user?.nickname || user?.email || '',
           noTtl: true,
         }
-        ;(window as Window & { __alderMeeting?: AlderMeetingBridge }).__alderMeeting = bridge
-        if (joined.host) {
-          localStorage.setItem(`whiteboard_admin_token:${joined.roomId}`, 'alder-host')
-        } else {
-          localStorage.removeItem(`whiteboard_admin_token:${joined.roomId}`)
-        }
-        const router = createRouter({
-          history: createMemoryHistory(),
-          routes: [{ path: '/r/:roomId', component: RoomView }],
-        })
-        await router.replace(`/r/${joined.roomId}`)
-        syncWbroomLangFromApp()
-        const Host = defineComponent({
-          setup() {
-            return () => h(RouterView)
-          },
-        })
-        app = createApp(Host)
-        app.use(createPinia())
-        app.use(router)
-        app.mount(el)
+        release = await mountMeetingRoom(el, bridge)
+        if (cancelled) release()
       } catch (err) {
         const message = err instanceof Error ? err.message : t('meeting.notOpen')
         setError(translateServerText(message))
@@ -106,8 +75,7 @@ export default function MeetingRoomPage() {
 
     return () => {
       cancelled = true
-      app?.unmount()
-      delete (window as Window & { __alderMeeting?: AlderMeetingBridge }).__alderMeeting
+      release?.()
     }
   }, [meetingId, params, t, user?.email, user?.nickname, user?.username])
 

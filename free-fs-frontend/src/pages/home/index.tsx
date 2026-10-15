@@ -223,6 +223,135 @@ const HOME_BENTO_STYLE = `
   max-width: 100%;
 }
 
+/* 右栏控制台：读数一行、图形一行，文件构成另起一块 */
+.hb-console {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.hb-console__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hb-console__kicker {
+  margin: 0;
+  font: 600 11px/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.hb-console__meta {
+  font: 500 12px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+.hb-console__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hb-readout {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 4px;
+  min-width: 0;
+}
+.hb-readout__name {
+  font: 500 13px/1 var(--font-sans);
+  color: var(--text-secondary);
+}
+.hb-readout__track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--surface-3);
+}
+.hb-readout__track > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  transition: width 700ms var(--ease-glide);
+}
+.hb-readout__track > i.warn {
+  background: #e24b4a;
+}
+.hb-readout__val {
+  min-width: 3rem;
+  font: 600 13px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--foreground);
+}
+.hb-readout__bytes {
+  margin: 0;
+  text-align: right;
+  font: 500 11px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.hb-fileline {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto 64px;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  color: inherit;
+  text-decoration: none;
+}
+.hb-fileline:hover .hb-fileline__name {
+  color: var(--foreground);
+}
+.hb-fileline__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+}
+.hb-fileline__name {
+  overflow: hidden;
+  font: 500 13px/1 var(--font-sans);
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hb-fileline__num {
+  font: 600 12px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+.hb-fileline__track {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--surface-3);
+}
+.hb-fileline__track > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+.hb-console__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--divider);
+}
+.hb-console__used {
+  min-width: 0;
+  overflow: hidden;
+  font: 500 12px/1.3 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ============================================================
    三联小卡里的「快速访问」紧凑网格
    ------------------------------------------------------------

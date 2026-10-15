@@ -58,14 +58,12 @@ function OpenStorageSettings() {
 }
 
 function OpenAiSettings() {
-  const { openSettings } = useSettingsModal()
   const navigate = useNavigate()
   const { slug } = useParams()
 
   useEffect(() => {
-    openSettings('ai')
     navigate(`/w/${slug ?? ''}`, { replace: true })
-  }, [navigate, openSettings, slug])
+  }, [navigate, slug])
 
   return null
 }

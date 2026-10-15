@@ -13,7 +13,6 @@ import {
   Palette,
   ScrollText,
   Shield,
-  Sparkles,
   UserRound,
   Users,
   Keyboard,
@@ -42,12 +41,6 @@ import { SettingsLogs } from './activity-log'
 import { SettingsImCrypto } from './im-crypto'
 import { SettingsShortcuts } from './shortcuts'
 import { SettingsSite } from './site'
-import { WorkspaceAiSettingsForm } from '@/pages/workspace-ai/ai-settings-form'
-import {
-  SettingsPageDescription,
-  SettingsPageEyebrow,
-  SettingsPageTitle,
-} from './components/settings-page-header'
 import StoragePage from '@/pages/storage'
 import { SidebarNav, type SettingsNavGroup } from './components/sidebar-nav'
 import './settings.css'
@@ -115,11 +108,6 @@ function buildNavConfig(
           permission: 'storage:manage',
         },
         {
-          title: t('nav.ai'),
-          tab: 'ai',
-          icon: { line: Sparkles, fill: Sparkles },
-        },
-        {
           title: t('nav.members'),
           tab: 'members',
           icon: { line: Users, fill: Users },
@@ -160,7 +148,6 @@ function toNavGroups(
 }
 
 function SettingsPanel({ tab }: { tab: SettingsTab }) {
-  const { t } = useTranslation('settings')
   const { hasPermission } = usePermission()
 
   switch (tab) {
@@ -202,19 +189,6 @@ function SettingsPanel({ tab }: { tab: SettingsTab }) {
       return <SettingsShortcuts />
     case 'site':
       return hasPermission('storage:manage') ? <SettingsSite /> : <NoPermission />
-    case 'ai':
-      return (
-        <div className='flex flex-col'>
-          <header className='flex flex-col mb-6 gap-1.5'>
-            <SettingsPageEyebrow>{t('workspaceAi.kicker')}</SettingsPageEyebrow>
-            <SettingsPageTitle>{t('workspaceAi.pageTitle')}</SettingsPageTitle>
-            <SettingsPageDescription>{t('workspaceAi.pageDescription')}</SettingsPageDescription>
-          </header>
-          <div>
-            <WorkspaceAiSettingsForm compact />
-          </div>
-        </div>
-      )
     default:
       return <SettingsProfile />
   }

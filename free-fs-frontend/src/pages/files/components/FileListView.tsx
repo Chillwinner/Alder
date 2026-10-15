@@ -6,6 +6,7 @@
 import { useState, useEffect, type RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { FileItem, SortOrder } from '@/types/file'
+import { nextFileSelection, openFileTarget, selectionAfterCheck } from '@/pages/files/file-item-gestures'
 import {
   Download,
   Share2,
@@ -188,48 +189,19 @@ export function FileListView({
   ])
 
   const handleSelectChange = (fileId: string, checked: boolean) => {
-    if (checked) {
-      onSelectionChange([...selectedKeys, fileId])
-    } else {
-      onSelectionChange(selectedKeys.filter((id) => id !== fileId))
-    }
+    onSelectionChange(selectionAfterCheck(selectedKeys, fileId, checked))
   }
 
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      onSelectionChange(fileList.map((f) => f.id))
-    } else {
-      onSelectionChange([])
-    }
+    onSelectionChange(checked ? fileList.map((file) => file.id) : [])
   }
 
   const handleRowClick = (file: FileItem, event: React.MouseEvent) => {
-    const isMultiSelect = event.ctrlKey || event.metaKey
-    const newSelectedKeys = [...selectedKeys]
-    const isCurrentlySelected = selectedKeys.includes(file.id)
-
-    if (isMultiSelect) {
-      // CTRL + Click: 切换当前项状态
-      if (isCurrentlySelected) {
-        const index = newSelectedKeys.indexOf(file.id)
-        if (index > -1) newSelectedKeys.splice(index, 1)
-      } else {
-        newSelectedKeys.push(file.id)
-      }
-    } else {
-      // 普通左键点击: 仅选中当前项
-      newSelectedKeys.splice(0, newSelectedKeys.length, file.id)
-    }
-
-    onSelectionChange(newSelectedKeys)
+    onSelectionChange(nextFileSelection(selectedKeys, file.id, event.ctrlKey || event.metaKey))
   }
 
   const handleDoubleClick = (file: FileItem) => {
-    if (file.isDir) {
-      onFileClick(file)
-    } else if (canRead) {
-      onPreview(file)
-    }
+    openFileTarget(file, canRead, () => onFileClick(file), () => onPreview(file))
   }
 
   const handleThumbnailDoubleClick = (
@@ -237,11 +209,7 @@ export function FileListView({
     event: React.MouseEvent<HTMLDivElement>
   ) => {
     event.stopPropagation()
-    if (file.isDir) {
-      onFileClick(file)
-    } else if (canRead) {
-      onPreview(file)
-    }
+    openFileTarget(file, canRead, () => onFileClick(file), () => onPreview(file))
   }
 
   const handleHeaderSort = (field: string) => {

@@ -31,7 +31,6 @@ import {
   Palette,
   Search,
   Settings,
-  Sparkles,
   Star,
   Sun,
   Trash2,
@@ -522,14 +521,6 @@ export function CommandMenu() {
           >
             <Settings className='size-4 text-hud' />
             <span>{ts('nav.workspace')}</span>
-          </CommandItem>
-          <CommandItem
-            value={`settings-ai ${ts('nav.ai')}`}
-            className={ITEM_CLASS}
-            onSelect={() => openTab('ai')}
-          >
-            <Sparkles className='size-4 text-hud' />
-            <span>{ts('nav.ai')}</span>
           </CommandItem>
           {canManageStorage ? (
             <CommandItem

@@ -4,7 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next'
-import * as React from 'react'
+import type { ReactNode } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import {
@@ -21,11 +21,8 @@ import { useSettingsModal } from '@/contexts/settings-modal-context'
 import { usePermission } from '@/hooks/use-permission'
 
 /**
- * 存储 hero —— 双仪表盘。
- *
- * 版式沿用 demo（环 + 大数字 + 图例 + 页脚），但**不造数据**。
- *
- * 双环改成看本机负载：左 CPU、右内存。类型构成仍用下面图例。
+ * 右栏控制台：上面两个环是本机 CPU / 内存，下面是文件构成。
+ * 百分比写在环心里，名称写在环下面，不再叠一层横条。
  */
 function formatHostBytes(bytes: number) {
   if (!Number.isFinite(bytes) || bytes <= 0) return '—'
@@ -33,10 +30,7 @@ function formatHostBytes(bytes: number) {
   return `${Math.round(bytes / 1024 ** 2)} MB`
 }
 
-const RING_R = 54
-const RING_C = 2 * Math.PI * RING_R
-
-/** 类型构成环形图用的固定顺序 + 配色（与文件图标色板同源） */
+/** 类型构成的固定顺序，颜色和文件图标一致。 */
 const SEGMENTS: { type: FileType; titleKey: string; color: string }[] = [
   { type: 'document', titleKey: 'category.document', color: 'var(--t-doc)' },
   { type: 'image', titleKey: 'category.image', color: 'var(--t-image)' },
@@ -45,30 +39,24 @@ const SEGMENTS: { type: FileType; titleKey: string; color: string }[] = [
   { type: 'other', titleKey: 'category.other', color: 'var(--t-archive)' },
 ]
 
-/** 单环骨架：底环 + 顶部数据环，两个仪表盘共用 */
+const RING_R = 54
+const RING_C = 2 * Math.PI * RING_R
+
 function Gauge({
   value,
   valueColor,
   children,
 }: {
-  /** 0~1，决定环画多少。⚠️ 传 1 就是满圆 = 100%，只有真的 100% 才能传 1 */
   value: number
   valueColor: string
-  children?: React.ReactNode
+  children?: ReactNode
 }) {
   const pct = Math.max(0, Math.min(1, value))
   const len = pct * RING_C
   return (
     <div className='hb-gauge-wrap'>
       <svg viewBox='0 0 128 128' aria-hidden>
-        <circle
-          cx='64'
-          cy='64'
-          r={RING_R}
-          fill='none'
-          stroke='var(--surface-3)'
-          strokeWidth='13'
-        />
+        <circle cx='64' cy='64' r={RING_R} fill='none' stroke='var(--surface-3)' strokeWidth='13' />
         <circle
           cx='64'
           cy='64'
@@ -155,91 +143,63 @@ export function StorageOverviewCard({
   const memUsed = formatHostBytes(loadQuery.data?.memoryUsedBytes ?? 0)
   const memTotal = formatHostBytes(loadQuery.data?.memoryTotalBytes ?? 0)
   const unavailable = t('storageCard.unavailable')
+  const cpuText = loadUnavailable ? unavailable : `${Math.round(cpu * 100)}%`
+  const memText = loadUnavailable ? unavailable : `${Math.round(mem * 100)}%`
+  const memNote = loadUnavailable ? undefined : t('storageCard.memorySub', { used: memUsed, total: memTotal })
 
   return (
-    <div className={className}>
-      <div className='a-bcell__head'>
-        <h3>{t('storageCard.title')}</h3>
-        {/*
-          ⚠️ 这里原来是 <span className='a-tag'>…</span> —— 一个**长得像按钮但不可点**
-             的胶囊（用户反馈"快速访问按钮没作用"，指的就是它）。
-             胶囊形状在 demo 里是用来表示"可操作的"，用作纯标签会误导。
-             现在改成真的 Link：跳文件页，并且带上当前筛选语义。
-        */}
-        <Link
-          to={`/w/${slug}/files`}
-          className='a-tag a-tag--accent transition-colors hover:brightness-110'
-        >
-          {totalFiles} {t('category.title')}
-        </Link>
-      </div>
-
-      <div className='hb-gauges'>
-        <div className='hb-gauge-cell'>
-          <Gauge value={cpu} valueColor='var(--primary)'>
-            <span>{t('storageCard.cpu')}</span>
-          </Gauge>
-          <div className='hb-gauge-num'>
-            {loadUnavailable ? (
-              <small>{unavailable}</small>
-            ) : (
-              <>
-                {Math.round(cpu * 100)}
-                <small>%</small>
-              </>
-            )}
-          </div>
-          <div className='hb-gauge-sub'>{t('storageCard.cpuSub')}</div>
+    <div className={className ? `hb-console ${className}` : 'hb-console'}>
+      <section className='hb-console__block' aria-label={t('storageCard.consoleTitle')}>
+        <div className='hb-console__head'>
+          <h3 className='hb-console__kicker'>{t('storageCard.consoleTitle')}</h3>
         </div>
-
-        <div className='hb-gauge-cell'>
-          <Gauge value={mem} valueColor='var(--t-image)'>
-            <span>{t('storageCard.memory')}</span>
-          </Gauge>
-          <div className='hb-gauge-num'>
-            {loadUnavailable ? (
-              <small>{unavailable}</small>
-            ) : (
-              <>
-                {Math.round(mem * 100)}
-                <small>%</small>
-              </>
-            )}
+        <div className='hb-gauges'>
+          <div className='hb-gauge-cell'>
+            <Gauge value={cpu} valueColor={cpu >= 0.9 ? '#e24b4a' : 'var(--primary)'}>
+              <div className='hb-gauge-num'>{cpuText}</div>
+            </Gauge>
+            <div className='hb-gauge-sub'>{t('storageCard.cpu')}</div>
           </div>
-          <div className='hb-gauge-sub'>
-            {loadUnavailable
-              ? unavailable
-              : t('storageCard.memorySub', { used: memUsed, total: memTotal })}
+          <div className='hb-gauge-cell'>
+            <Gauge value={mem} valueColor={mem >= 0.9 ? '#e24b4a' : 'var(--t-image)'}>
+              <div className='hb-gauge-num'>{memText}</div>
+            </Gauge>
+            <div className='hb-gauge-sub'>{t('storageCard.memory')}</div>
+            {memNote ? <div className='hb-gauge-sub'>{memNote}</div> : null}
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className='a-legend a-legend--grid a-legend--spaced'>
-        {rows.map((r) => (
-          <div key={r.type}>
-            <i style={{ background: r.color }} />
-            {t(r.titleKey)}
-            <b>{r.count}</b>
-            {/* 迷你条：让每类的量级一眼可比，而不是只有数字 */}
-            <span className='a-legend__bar' aria-hidden>
-              <i
-                style={{
-                  background: r.color,
-                  width: maxCount > 0 ? `${(r.count / maxCount) * 100}%` : '0%',
-                }}
-              />
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div className='a-hero-foot'>
-        <div className='a-person' style={{ gap: 9, flex: 1 }}>
-          <span className='a-state-dot a-state-dot--on' />
-          <span className='a-sub' style={{ margin: 0 }}>
-            {t('storageCard.foot', { count: totalFiles, used: display })}
-          </span>
+      <section className='hb-console__block' aria-label={t('storageCard.filesHeading')}>
+        <div className='hb-console__head'>
+          <h3 className='hb-console__kicker'>{t('storageCard.filesHeading')}</h3>
+          <span className='hb-console__meta'>{totalFiles}</span>
         </div>
+        <div className='hb-console__rows'>
+          {rows.map((row) => (
+            <Link
+              key={row.type}
+              to={`/w/${slug}/files?type=${row.type}`}
+              className='hb-fileline'
+            >
+              <i className='hb-fileline__swatch' style={{ background: row.color }} />
+              <span className='hb-fileline__name'>{t(row.titleKey)}</span>
+              <span className='hb-fileline__num'>{row.count}</span>
+              <span className='hb-fileline__track' aria-hidden>
+                <i
+                  style={{
+                    background: row.color,
+                    width: maxCount > 0 ? `${(row.count / maxCount) * 100}%` : '0%',
+                  }}
+                />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <div className='hb-console__foot'>
+        <span className='hb-console__used'>{display}</span>
         {canManageStorage ? (
           <button
             type='button'
